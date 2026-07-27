@@ -1,0 +1,170 @@
+aid: energy-queensland
+url: https://raw.githubusercontent.com/api-evangelist/energy-queensland/refs/heads/main/apis.yml
+name: Energy Queensland
+kind: company
+description: >-
+  Energy Queensland Limited is the Queensland Government-owned corporation formed on 30 June 2016
+  by merging Ergon Energy and Energex. It is the whole Queensland electricity value chain below
+  transmission in a single holding company: Energex distributes to roughly 1.5 million connections
+  across South East Queensland, Ergon Energy Network distributes across regional Queensland, Ergon
+  Energy Retail is the notified-price retailer for about 760,000 regional customers, Yurika sells
+  energy services and telecommunications, and SPARQ Solutions provides group ICT. That dual role is
+  what makes its API posture worth recording precisely, because the two halves of the business sit
+  on opposite sides of a statutory line. The RETAIL half is a designated Consumer Data Right energy
+  data holder and its implementation is verified live, not claimed: "Ergon Energy Retail" (ABN
+  11121177802) is listed on the ACCC CDR Register with publicBaseUri
+  https://public.cdr.ergonretail.com.au and productBaseUri https://cdr.energymadeeasy.gov.au/ergon,
+  both of which answered HTTP 200 to anonymous, standards-conformant calls on 2026-07-27, returning
+  36 REGULATED electricity plans and a CDS discovery status of OK. The DISTRIBUTION half - the poles
+  and wires - is not a CDR data holder at all, publishes no developer portal, no open-data API and no
+  machine-readable contract, and has no developer., developers., api., docs. or data. subdomain in
+  DNS on energyq.com.au, ergon.com.au or energex.com.au. Its network data reaches the public as PDF
+  and XLSX planning reports, registration-free but non-programmatic map viewers, and exactly one
+  open-licensed spatial dataset deposited on the Queensland Government's CKAN portal. The split is
+  the finding: a mandate transplanted from banking produced a real, anonymous, standardised API on
+  the regulated retail side and changed nothing whatsoever on the network side it never touched.
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/energy-queensland.png
+tags:
+- Energy
+- Australia
+- Utilities
+- Electricity
+- Grid
+- Distribution Network
+- Energy Retail
+- Consumer Data Right
+- CDR
+- Product Reference Data
+- Queensland
+- Smart Metering
+- Solar
+- DER
+- Open Data
+created: '2026-07-27'
+modified: '2026-07-27'
+specificationVersion: '0.19'
+apis:
+- aid: energy-queensland:ergon-energy-retail-cdr-energy-product-reference-data-api
+  name: Ergon Energy Retail CDR Energy Product Reference Data API
+  description: >-
+    The unauthenticated Consumer Data Right Product Reference Data surface for Energy Queensland's
+    retail brand, Ergon Energy Retail - Get Generic Plans and Get Generic Plan Detail from the
+    Consumer Data Standards CDR Energy API. In CDR energy, unlike CDR banking, generic plan data is
+    not served by the data holder's own host: it is served centrally by the Australian Energy
+    Regulator's Energy Made Easy CDR host under a per-brand path, and the ACCC CDR Register exposes
+    that path as productBaseUri from register version x-v 2 onwards. Confirmed live 2026-07-27:
+    GET /cds-au/v1/energy/plans with header x-v 1 returned HTTP 200 and meta.totalRecords 36 with
+    meta.totalPages 36; the first record is planId ERG1064038RRE1@EME, brand "ergon", brandName
+    "Ergon Energy", fuelType ELECTRICITY, type REGULATED, geography.distributors ["Ergon"] with
+    several hundred regional Queensland postcodes. Plan detail requires x-v 3 or higher - x-v 1
+    returns urn:au-cds:error:cds-all:Header/UnsupportedVersion with HTTP 406, x-v 3 returns HTTP 200.
+    The plan type is worth noting: Ergon Energy Retail sells Queensland government notified prices in
+    regional Queensland, so these 36 plans are REGULATED rather than MARKET offers. No API key, no
+    signup and no accreditation is needed to call it.
+  humanURL: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  baseURL: https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
+  tags:
+  - Energy Plans
+  - Product Reference Data
+  - Consumer Data Right
+  - Tariffs
+  - Regulated Prices
+  - Australia
+  properties:
+  - type: OpenAPI
+    url: openapi/energy-queensland-cds-energy-openapi.yml
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plans
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plan-detail
+  - type: Documentation
+    url: https://consumerdatastandardsaustralia.github.io/standards/
+  - type: Registry
+    url: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
+- aid: energy-queensland:ergon-energy-retail-cdr-discovery-api
+  name: Ergon Energy Retail CDR Discovery API
+  description: >-
+    Ergon Energy Retail's own registered Consumer Data Right public base URI, serving the two
+    unauthenticated Data Holder Operations endpoints of the Consumer Data Standards CDR Common API -
+    Get Status and Get Outages. This is the only anonymously callable API surface hosted on an Energy
+    Queensland controlled domain. Confirmed live 2026-07-27: GET /cds-au/v1/discovery/status with
+    header x-v 1 returned HTTP 200 and the CDS envelope {"data":{"status":"OK","updateTime":
+    "2026-07-27T12:08:30Z","explanation":"All services operational"},"links":{...},"meta":{}}, and
+    GET /cds-au/v1/discovery/outages returned HTTP 200 with an empty outages array. The base URI
+    serves nothing else anonymously - /cds-au/v1/energy/plans, the site root and
+    /.well-known/openid-configuration all return an nginx HTTP 404.
+  humanURL: https://consumerdatastandardsaustralia.github.io/standards/#common-apis
+  baseURL: https://public.cdr.ergonretail.com.au/cds-au/v1
+  tags:
+  - Discovery
+  - Status
+  - Outages
+  - Consumer Data Right
+  - Australia
+  properties:
+  - type: OpenAPI
+    url: openapi/energy-queensland-cds-common-openapi.yml
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-status
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-outages
+  - type: Status
+    url: https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
+  - type: Documentation
+    url: https://consumerdatastandardsaustralia.github.io/standards/
+- aid: energy-queensland:ergon-energy-retail-cdr-energy-consumer-data-api
+  name: Ergon Energy Retail CDR Energy Consumer Data API
+  description: >-
+    The consumer-authorised half of the Consumer Data Right energy obligation that Ergon Energy
+    Queensland Pty Ltd is designated to meet as a data holder - electricity service points, usage,
+    distributed energy resources, energy accounts, balances, invoices, billing, concessions and
+    payment schedules, sixteen paths in all from the Consumer Data Standards CDR Energy API. This
+    surface is real and mandated, but it is not open: it is reachable only by an ACCC-accredited CDR
+    data recipient, over mutual TLS with FAPI-profile OAuth2 and OpenID Connect, after the individual
+    customer grants consent, and the infosec base URI is published only through the authenticated
+    portion of the CDR Register. No baseURL is recorded here because none is publicly discoverable
+    and no endpoint on this surface was called. What was observed, and is recorded as behavioural
+    evidence rather than a call, is that the host api.cdr.ergonretail.com.au resolves
+    (16.176.214.208, 15.134.24.248, 15.134.170.191) and its TLS handshake emits a Request CERT
+    message backed by a private certificate chain - the mTLS gate the Consumer Data Standards
+    security profile requires. The mandate is verified; the endpoints are, by design, unverifiable
+    from outside the accreditation regime.
+  humanURL: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  tags:
+  - Energy Accounts
+  - Electricity Usage
+  - Billing
+  - Distributed Energy Resources
+  - Consumer Data Right
+  - Australia
+  properties:
+  - type: OpenAPI
+    url: openapi/energy-queensland-cds-energy-openapi.yml
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  - type: Authentication
+    url: https://consumerdatastandardsaustralia.github.io/standards/#security-profile
+  - type: Documentation
+    url: https://consumerdatastandardsaustralia.github.io/standards/
+common:
+- type: Website
+  url: https://www.energyq.com.au/
+- type: GitHubOrganization
+  url: https://github.com/Energy-Queensland
+- type: LinkedIn
+  url: https://au.linkedin.com/company/energyq
+- type: Status
+  url: https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
+- type: Registry
+  url: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
+- type: Documentation
+  url: https://consumerdatastandardsaustralia.github.io/standards/
+- type: Data
+  url: https://www.data.qld.gov.au/dataset/ergon-energy-electrical-distribution-network-series
+- type: Regulatory
+  url: https://www.accc.gov.au/public-registers/exemption-for-ergon-energy-queensland-pty-ltd
+maintainers:
+- FN: Kin Lane
+  email: kin@apievangelist.com
