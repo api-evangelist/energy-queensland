@@ -1,0 +1,163 @@
+generated: '2026-07-27'
+method: searched
+source: >-
+  https://consumerdatastandardsaustralia.github.io/standards/#versioning,
+  https://consumerdatastandardsaustralia.github.io/standards/includes/endpoint-version-schedule/,
+  https://consumerdatastandardsaustralia.github.io/standards/#non-functional-requirements,
+  and live probes of Ergon Energy Retail's CDR hosts on 2026-07-27.
+description: >-
+  Energy Queensland publishes no versioning policy, no deprecation policy, no
+  SLA and no status page of its own - and does not need to, because as a
+  designated Consumer Data Right data holder its retail subsidiary inherits all
+  four from the Treasury Data Standards Body. The deprecation policy in
+  particular is unusually strong for a utility: every endpoint version in the
+  standard carries a published Binding Date, Date Deprecated and Retirement
+  Date, so a caller can see years in advance exactly when a version stops being
+  served. The status page is not a marketing status page either - it is a
+  mandated machine-readable endpoint that returned HTTP 200 "All services
+  operational" when probed on 2026-07-27.
+versioning:
+  scheme: per-endpoint header version over a path-embedded major version
+  mechanism: x-v request header (with optional x-min-v), echoed as the x-v response header
+  path_major: /cds-au/v1/
+  current_standard: 1.36.0
+  docs: https://consumerdatastandardsaustralia.github.io/standards/#versioning
+  schedule: https://consumerdatastandardsaustralia.github.io/standards/includes/endpoint-version-schedule/
+  observed_versions:
+    - operationId: listEnergyPlans
+      endpoint: GET /energy/plans
+      max_supported_on_host: 1
+      evidence: 'x-v: 99 -> HTTP 406 "Header x-v greater than maximum supported [x-v=99, max=1]" (2026-07-27)'
+    - operationId: getEnergyPlanDetail
+      endpoint: GET /energy/plans/{planId}
+      min_supported_on_host: 3
+      evidence: 'x-v: 1 -> HTTP 406 "Header x-v lower than minimum supported [x-v=1, min=3]"; x-v: 3 -> HTTP 200 (2026-07-27)'
+    - operationId: getStatus
+      endpoint: GET /discovery/status
+      supported: 1
+    - operationId: getOutages
+      endpoint: GET /discovery/outages
+      supported: 1
+deprecation:
+  policy_url: https://consumerdatastandardsaustralia.github.io/standards/includes/endpoint-version-schedule/
+  mechanism: >-
+    Endpoint-version schedule. Every version of every endpoint is published with
+    a Binding Date (when data holders must serve it), a Date Deprecated and a
+    Retirement Date. Deprecated versions continue to be served until the
+    retirement date, after which a request for that version returns HTTP 406
+    Header/UnsupportedVersion.
+  sunset_header: false
+  sunset_header_note: >-
+    RFC 8594 Sunset/Deprecation headers are NOT used. Version retirement is
+    published as dated schedule rows and enforced through x-v negotiation.
+  retired_versions_relevant_to_this_provider:
+    - endpoint: GET /energy/plans/{planId}
+      version: V1
+      deprecated: '2023-05-07 (standards v1.24.0)'
+      retired: '2024-09-09'
+    - endpoint: GET /energy/plans/{planId}
+      version: V2
+      deprecated: '2024-04-24 (standards v1.30.0)'
+      retired: '2025-03-03'
+    - endpoint: GET /energy/electricity/servicepoints
+      version: V1
+      deprecated: '2025-03-13 (standards v1.34.0)'
+      retired: '2026-03-16'
+    - endpoint: GET /energy/electricity/servicepoints/{servicePointId}
+      version: V1
+      deprecated: '2025-03-13 (standards v1.34.0)'
+      retired: '2026-03-16'
+    - endpoint: GET /energy/accounts
+      version: V1
+      deprecated: '2022-09-13 (standards v1.19.0)'
+      retired: '2023-04-14'
+    - endpoint: GET /energy/accounts/{accountId}
+      version: V1
+      deprecated: '2022-09-13 (standards v1.19.0)'
+      retired: '2023-04-14'
+    - endpoint: GET /energy/accounts/{accountId}
+      version: V2
+      deprecated: '2023-05-07 (standards v1.24.0)'
+      retired: '2024-09-09'
+    - endpoint: GET /energy/accounts/{accountId}
+      version: V3
+      deprecated: '2024-04-24 (standards v1.30.0)'
+      retired: '2025-03-03'
+    - endpoint: GET /energy/accounts/{accountId}/billing
+      version: V1
+      deprecated: '2023-07-08 (standards v1.25.0)'
+      retired: '2024-09-09'
+    - endpoint: GET /common/customer/detail
+      version: V1
+      deprecated: '2021-12-23 (standards v1.15.0)'
+      retired: '2023-02-28'
+  note: >-
+    These are retirements in the shared standard that Ergon Energy Retail is
+    bound by, not deprecations Energy Queensland announced. The harvested
+    OpenAPI documents contain the current (non-deprecated) version of every
+    operation, so no operation in openapi/ carries deprecated: true.
+deprecated_operations: []
+sla:
+  url: https://consumerdatastandardsaustralia.github.io/standards/#non-functional-requirements
+  uptime_target: 99.5% per calendar month
+  scope: >-
+    Applies to authenticated AND unauthenticated endpoints. A period of
+    unavailability is any period when any endpoint in the standard cannot
+    reliably return a successful response to a well-formed request.
+  planned_outages:
+    excluded_from_target: true
+    notice_requirement: >-
+      Published to Data Recipient Software Products with at least one week lead
+      time for normal outages; may occur without notice only to resolve a
+      critical service or security issue.
+  performance:
+    requirement: 95% of calls per hour within the nominated threshold
+    thresholds:
+      unauthenticated: 1500ms
+      high_priority: 1000ms
+      low_priority: 1500ms
+      unattended: 4000ms
+      large_payload: 6000ms
+      secondary_request: 1000ms (data holder) / 1500ms (secondary data holder)
+      large_secondary_request: 1500ms (data holder) / 4500ms (secondary data holder)
+    energy_high_priority_endpoints:
+      - Get Status
+      - Get Outages
+      - Get Energy Accounts (customer present)
+      - Get Energy Account Detail (customer present)
+      - Get Balance For Energy Account (customer present)
+      - Get Invoices For Account (customer present)
+      - Get Customer / Get Customer Detail (customer present)
+  secondary_data_holder_note: >-
+    Unavailability of AEMO as the secondary data holder does not count against
+    Ergon Energy Retail's availability, but it does mean usage, DER and service
+    point requests may fail under the Shared Responsibility model.
+status_page:
+  url: https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
+  type: machine-readable CDS Get Status endpoint (mandated, unauthenticated)
+  verified: live
+  observed: >-
+    HTTP 200 on 2026-07-27 with
+    {"data":{"status":"OK","updateTime":"2026-07-27T20:23:06Z","explanation":"All services operational"}}
+  states: [OK, PARTIAL_FAILURE, UNAVAILABLE, SCHEDULED_OUTAGE]
+  human_status_page: false
+  human_status_page_note: >-
+    There is no status.energyq.com.au, no Statuspage/Atlassian page and no human
+    status dashboard anywhere on the group's domains. The machine-readable
+    endpoint is the only status surface, which is precisely what the standard
+    requires and nothing more.
+outages:
+  url: https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/outages
+  type: machine-readable CDS Get Outages endpoint (mandated, unauthenticated)
+  verified: live
+  observed: HTTP 200 on 2026-07-27 with an empty outages array
+  purpose: Scheduled outage disclosure to data recipients (the one-week notice obligation above).
+changelog: changelog/energy-queensland-changelog.yml
+designation_history:
+  designated: Ergon Energy Queensland Pty Ltd (ABN 11 121 177 802) as a CDR energy data holder
+  exemption: >-
+    ACCC section 56GD exemption granted 25 August 2023 deferring certain CDR
+    Rules obligations for non-complex and complex requests until 1 July 2024.
+  exemption_url: https://www.accc.gov.au/public-registers/exemption-for-ergon-energy-queensland-pty-ltd
+  register_last_updated: '2026-07-01T12:15:26Z'
+  register_url: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary

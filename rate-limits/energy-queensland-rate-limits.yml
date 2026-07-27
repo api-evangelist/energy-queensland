@@ -1,0 +1,129 @@
+specification: API Commons Rate Limits
+specificationVersion: '0.1'
+generated: '2026-07-27'
+method: searched
+provider: Energy Queensland
+providerId: energy-queensland
+created: '2026-07-27'
+modified: '2026-07-27'
+tags:
+  - Rate Limiting
+  - Consumer Data Right
+  - Energy
+  - Australia
+description: >-
+  Energy Queensland publishes no rate limits of its own. Ergon Energy Retail's
+  Consumer Data Right surface is governed by the traffic thresholds in the
+  Non-functional Requirements of the Treasury Data Standards Body's Consumer
+  Data Standards, which apply identically to every registered Australian energy
+  data holder. Calls in excess of these thresholds may be freely throttled or
+  rejected by the data holder without counting against its 99.5% availability or
+  its response-time obligations. The thresholds are expressed as sessions per
+  day, transactions per second and calls per session by traffic class, not as a
+  per-key quota, and are NOT signalled in response headers - no rate-limit
+  header was observed on any live call on 2026-07-27.
+sources:
+  - https://consumerdatastandardsaustralia.github.io/standards/#non-functional-requirements
+  - https://raw.githubusercontent.com/ConsumerDataStandardsAustralia/standards/master/slate/source/includes/nfrs/_traffic-thresholds.md
+headers:
+  requestId: x-fapi-interaction-id
+  rateLimitRemaining: null
+  rateLimitReset: null
+  retryAfter: >-
+    Retry-After is advertised in Access-Control-Expose-Headers on the AER
+    Product Reference Data host; no throttled response was provoked, so its
+    presence on a 429 is documented rather than observed.
+responseCodes:
+  throttled: 429
+limits:
+  - name: Customer present / authorisation traffic - sessions
+    scope: customer
+    metric: sessions_per_day
+    limit: null
+    unlimited: true
+    timeFrame: day
+  - name: Customer present / authorisation traffic - per customer
+    scope: customer
+    metric: transactions_per_second
+    limit: 10
+    timeFrame: second
+  - name: Customer present / authorisation traffic - per data recipient software product
+    scope: software_product
+    metric: transactions_per_second
+    limit: 50
+    timeFrame: second
+  - name: Unattended traffic - sessions per day per customer per software product
+    scope: customer_per_software_product
+    metric: sessions_per_day
+    limit: 20
+    timeFrame: day
+    note: Low traffic periods. High traffic periods are best effort only.
+  - name: Unattended traffic - calls per session
+    scope: session
+    metric: calls
+    limit: 100
+    timeFrame: session
+  - name: Unattended traffic - per session
+    scope: session
+    metric: transactions_per_second
+    limit: 5
+    timeFrame: second
+  - name: Unattended traffic - per data recipient software product
+    scope: software_product
+    metric: transactions_per_second
+    limit: 50
+    timeFrame: second
+  - name: Secure traffic - data holder with 0 to 10,000 active authorisations
+    scope: data_holder
+    metric: peak_transactions_per_second
+    limit: 150
+    timeFrame: second
+  - name: Secure traffic - data holder with 10,001 to 20,000 active authorisations
+    scope: data_holder
+    metric: peak_transactions_per_second
+    limit: 200
+    timeFrame: second
+  - name: Secure traffic - data holder with 20,001 to 30,000 active authorisations
+    scope: data_holder
+    metric: peak_transactions_per_second
+    limit: 250
+    timeFrame: second
+  - name: Secure traffic - data holder with 30,001 to 40,000 active authorisations
+    scope: data_holder
+    metric: peak_transactions_per_second
+    limit: 300
+    timeFrame: second
+  - name: Secure traffic - data holder with 40,001 to 50,000 active authorisations
+    scope: data_holder
+    metric: peak_transactions_per_second
+    limit: 350
+    timeFrame: second
+  - name: Secure traffic - data holder with 50,001 to 60,000 active authorisations
+    scope: data_holder
+    metric: peak_transactions_per_second
+    limit: 400
+    timeFrame: second
+  - name: Secure traffic - data holder with more than 60,000 active authorisations
+    scope: data_holder
+    metric: peak_transactions_per_second
+    limit: 450
+    timeFrame: second
+  - name: Public traffic (unauthenticated endpoints, additive to secure traffic)
+    scope: all_consumers
+    metric: peak_transactions_per_second
+    limit: 300
+    timeFrame: second
+    applies_to:
+      - listEnergyPlans
+      - getEnergyPlanDetail
+      - getStatus
+      - getOutages
+notes: >-
+  No threshold applies to secondary data holders (AEMO) because recipient
+  traffic is already shaped by the thresholds above before it reaches them.
+  Nothing here was measured against the live Ergon hosts - these are the
+  published obligations, and no anonymous call made during enrichment was
+  throttled.
+related:
+  conventions: conventions/energy-queensland-conventions.yml
+  lifecycle: lifecycle/energy-queensland-lifecycle.yml

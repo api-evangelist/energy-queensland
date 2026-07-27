@@ -1,0 +1,63 @@
+generated: '2026-07-27'
+method: searched
+source: >-
+  npm registry search, PyPI, and the GitHub organisation github.com/Energy-Queensland
+  (all queried 2026-07-27), plus the SDK/SourceCode links in apis.yml (there are none).
+description: >-
+  Energy Queensland publishes NO client libraries, in any language, on any
+  registry. This is a verified negative, not an unsearched gap. It is also the
+  expected result: the company has no developer programme, and the API surface
+  it does have exists because a statute compelled it. A CDR data recipient does
+  not integrate against an Ergon SDK - it integrates against the shared Consumer
+  Data Standards using whatever CDR tooling it already has, because every one of
+  the 84 registered energy brands exposes a byte-identical contract.
+packages: []
+official_sdk_count: 0
+registries_probed:
+  - registry: npm
+    result: none
+    detail: >-
+      Searched "ergon energy" and "consumer data standards energy" - no
+      first-party or Energy-Queensland-attributable package. All hits were
+      unrelated (Bluetooth Low Energy plugins, energy monitoring adapters).
+  - registry: pypi
+    result: none
+    detail: >-
+      pypi.org/project/energyq, /ergon-energy and /cds-energy all return 404.
+      pypi.org/project/ergon returns 200 but is "Fullstack python framework
+      faster release product" by Quan Vu - entirely unrelated to Ergon Energy.
+  - registry: maven-central
+    result: none
+  - registry: nuget
+    result: none
+  - registry: pkg.go.dev
+    result: none
+  - registry: rubygems
+    result: none
+  - registry: packagist
+    result: none
+  - registry: crates.io
+    result: none
+github_organisation:
+  url: https://github.com/Energy-Queensland
+  verified: true
+  created: '2020-04-15'
+  public_repos: 2
+  original_repos: 0
+  repos:
+    - name: nem-reader
+      fork: true
+      language: Python
+      description: Parse AEMO NEM12 (interval metering data) and NEM13 (accumulated metering data) files.
+      first_party: false
+      note: A fork of a third-party AEMO tool. Evidences the internal data formats the group works in; not an Energy Queensland client library.
+    - name: SparkMMS
+      fork: true
+      description: Custom AEMO MMS Data Model CSV reader for Apache Spark.
+      first_party: false
+      note: Also a fork. Zero original code, zero published specifications, zero contracts.
+notes: >-
+  No SDKs pointer is wired in apis.yml because there are no SDKs. Third-party
+  CDR client tooling exists in the Australian ecosystem (mock data holders,
+  conformance harnesses, recipient SDKs), but none of it is first-party to
+  Energy Queensland and none is recorded here as if it were.

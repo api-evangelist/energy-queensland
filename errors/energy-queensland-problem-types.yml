@@ -1,0 +1,166 @@
+generated: '2026-07-27'
+method: searched
+source: >-
+  Live error probes of the two anonymous Ergon Energy Retail CDR surfaces on
+  2026-07-27 (payloads captured verbatim below), plus the 4xx responses declared
+  in openapi/energy-queensland-cds-energy-openapi.yml and
+  openapi/energy-queensland-cds-common-openapi.yml, plus the CDS error code
+  reference at https://consumerdatastandardsaustralia.github.io/standards/#error-codes
+docs: https://consumerdatastandardsaustralia.github.io/standards/#error-codes
+format: cds-error-list
+format_note: >-
+  NOT RFC 9457. The Consumer Data Standards predate wide problem+json adoption
+  and define their own envelope: content-type application/json with a top-level
+  "errors" array, each element carrying code (a urn:au-cds:error:... URN), title
+  (stable per code) and detail (occurrence specific), plus an optional meta.urn
+  when a data holder extends a standard code with an application-specific one.
+  The energy service-point and DER/usage operations use PrimaryErrorV1, which
+  adds isSecondaryDataHolderError to flag an error propagated from AEMO as the
+  CDR secondary data holder.
+envelope:
+  schema_energy: ResponseErrorListV2 / PrimaryResponseErrorListV1
+  schema_common: ResponseErrorListV2
+  shape:
+    errors:
+      - code: urn:au-cds:error:cds-all:Header/UnsupportedVersion
+        title: Unsupported Version
+        detail: Header x-v greater than maximum supported [x-v=99, max=1]
+  fields:
+    code: The error code URN, or an application-specific code with meta.urn naming the URN it extends.
+    title: Short human-readable summary that MUST NOT change between occurrences of the same code.
+    detail: Human-readable explanation specific to this occurrence.
+    meta.urn: Conditional. The CDR error code URN an application-specific code extends.
+    isSecondaryDataHolderError: PrimaryErrorV1 only. True when the error was propagated from AEMO.
+problems:
+  - status: 400
+    code: urn:au-cds:error:cds-all:Header/Missing
+    title: Missing Required Header
+    verified: live
+    request: GET https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1/energy/plans (no x-v header)
+    response_verbatim: '{"errors":[{"code":"urn:au-cds:error:cds-all:Header/Missing","title":"Missing Required Header","detail":"Header x-v must be provided"}]}'
+    remediation: Always send an x-v header naming the endpoint version you want.
+  - status: 400
+    code: urn:au-cds:error:cds-all:Header/InvalidVersion
+    title: Invalid Version
+    verified: live
+    request: GET .../energy/plans with x-v=abc
+    response_verbatim: '{"errors":[{"code":"urn:au-cds:error:cds-all:Header/InvalidVersion","title":"Invalid Version","detail":"Header x-v must be positive integer [x-v=abc]"}]}'
+    also_observed_on: >-
+      https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status returns the
+      same code with detail "Requested an unparseable version of abc" - the two
+      hosts run different implementations and word the detail differently while
+      keeping the code and title identical, which is exactly what the standard requires.
+    remediation: x-v must be a positive integer.
+  - status: 406
+    code: urn:au-cds:error:cds-all:Header/UnsupportedVersion
+    title: Unsupported Version
+    verified: live
+    request: GET .../energy/plans with x-v=99
+    response_verbatim: '{"errors":[{"code":"urn:au-cds:error:cds-all:Header/UnsupportedVersion","title":"Unsupported Version","detail":"Header x-v greater than maximum supported [x-v=99, max=1]"}]}'
+    also_observed: >-
+      GET .../energy/plans/ERG1064038RRE1@EME with x-v=1 returns the same code
+      with detail "Header x-v lower than minimum supported [x-v=1, min=3]", and
+      the discovery endpoints return it with detail "Unable to locate a version
+      of ResponseCommonDiscoveryStatus that is between version 99 and 99".
+    remediation: >-
+      Negotiate down to a supported endpoint version. Get Generic Plans supports
+      max version 1 on this host; Get Generic Plan Detail requires minimum
+      version 3. See lifecycle/energy-queensland-lifecycle.yml.
+  - status: 400
+    code: urn:au-cds:error:cds-all:Field/InvalidPageSize
+    title: Invalid Page Size
+    verified: live
+    request: GET .../energy/plans?page-size=99999 with x-v=1
+    response_verbatim: '{"errors":[{"code":"urn:au-cds:error:cds-all:Field/InvalidPageSize","title":"Invalid Page Size","detail":"Field page-size cannot be more than 1000 [page-size=99999]"}]}'
+    remediation: page-size must be between 1 and 1000 (default 25).
+  - status: 400
+    code: urn:au-cds:error:cds-all:Field/Invalid
+    title: Invalid Field
+    verified: live
+    request: GET .../energy/plans?page=notanumber with x-v=1
+    response_verbatim: '{"errors":[{"code":"urn:au-cds:error:cds-all:Field/Invalid","title":"Invalid Field","detail":"Field page must be a positive integer [page=notanumber]"}]}'
+    remediation: Correct the named field. The detail always names the offending field and value.
+  - status: 400
+    code: urn:au-cds:error:cds-all:Field/Missing
+    title: Missing Required Field
+    verified: spec
+    source_operation: openapi/energy-queensland-cds-energy-openapi.yml (declared on all 400 responses)
+  - status: 400
+    code: urn:au-cds:error:cds-all:Field/InvalidDateTime
+    title: Invalid Date
+    verified: spec
+    source_operation: >-
+      Declared on the 400 of the billing, invoice and usage operations
+      (listEnergyAccountBillingBulk, listEnergyAccountInvoicesBulk,
+      listElectricityUsageBulk and siblings) which take date-range parameters.
+  - status: 422
+    code: urn:au-cds:error:cds-all:Field/InvalidPage
+    title: Invalid Page
+    verified: live
+    request: GET .../energy/plans?page=99999 with x-v=1
+    response_verbatim: '{"errors":[{"code":"urn:au-cds:error:cds-all:Field/InvalidPage","title":"Invalid Page","detail":"Field page is out of range [page=99999, totalPages=2]"}]}'
+    remediation: Request a page within meta.totalPages. Note the 422 (not 404) for an out-of-range page.
+  - status: 404
+    code: urn:au-cds:error:cds-all:Resource/NotFound
+    title: Resource Not Found
+    verified: live
+    request: GET .../energy/plans/NOT-A-REAL-PLAN with x-v=3
+    response_verbatim: '{"errors":[{"code":"urn:au-cds:error:cds-all:Resource/NotFound","title":"Resource Not Found"}]}'
+    note: >-
+      The spec declares "404 - Invalid Resource" (Resource/Invalid) for
+      getEnergyPlanDetail; the live AER implementation answers Resource/NotFound
+      for an unknown planId. Recorded as observed.
+  - status: 404
+    code: urn:au-cds:error:cds-energy:Authorisation/UnavailableEnergyAccount
+    title: Unavailable Energy Account
+    verified: spec
+    source_operation: getEnergyAccountDetail, getEnergyAccountBalance, getBillingForEnergyAccount, getEnergyAccountConcessions, getEnergyAccountInvoices, getEnergyAccountPaymentSchedule
+    docs: https://consumerdatastandardsaustralia.github.io/standards/#error-404-unavailable-energy-account
+  - status: 404
+    code: urn:au-cds:error:cds-energy:Authorisation/InvalidEnergyAccount
+    title: Invalid Energy Account
+    verified: spec
+    docs: https://consumerdatastandardsaustralia.github.io/standards/#error-404-invalid-energy-account
+  - status: 404
+    code: urn:au-cds:error:cds-energy:Authorisation/UnavailableServicePoint
+    title: Unavailable Service Point
+    verified: spec
+    source_operation: getElectricityServicePointDetail, getElectricityDERForServicePoint, getElectricityServicePointUsage
+    docs: https://consumerdatastandardsaustralia.github.io/standards/#error-404-unavailable-service-point
+  - status: 404
+    code: urn:au-cds:error:cds-energy:Authorisation/InvalidServicePoint
+    title: Invalid Service Point
+    verified: spec
+    docs: https://consumerdatastandardsaustralia.github.io/standards/#error-404-invalid-service-point
+  - status: 422
+    code: urn:au-cds:error:cds-energy:Authorisation/UnavailableEnergyAccount
+    title: Unavailable Energy Account
+    verified: spec
+    source_operation: listEnergyAccountBalancesSpecificAccounts, listEnergyAccountBillingForSpecificAccounts, listEnergyInvoicesForSpecificAccounts
+    note: The POST "for specific accounts" operations return 422 rather than 404 for an unavailable account id in the request body.
+  - status: 422
+    code: urn:au-cds:error:cds-energy:Authorisation/InvalidEnergyAccount
+    title: Invalid Energy Account
+    verified: spec
+  - status: 422
+    code: urn:au-cds:error:cds-energy:Authorisation/UnavailableServicePoint
+    title: Unavailable Service Point
+    verified: spec
+    source_operation: listElectricityDERForSpecificServicePoints, listElectricityUsageForServicePoints
+  - status: 422
+    code: urn:au-cds:error:cds-energy:Authorisation/InvalidServicePoint
+    title: Invalid Service Point
+    verified: spec
+coverage:
+  operations_total: 27
+  operations_with_4xx_declared: 27
+  distinct_status_codes: [400, 404, 406, 422]
+  live_verified_codes: 7
+  spec_only_codes: 10
+notes: >-
+  No 401/403 error is declared anywhere in the harvested documents because the
+  authorisation failures for a CDR data holder are defined in the Security
+  Profile (invalid consent, revoked consent, ADR status not active) rather than
+  in the resource API swagger. Those codes exist in the standard
+  (urn:au-cds:error:cds-all:Authorisation/*) but were not observed here and no
+  gated endpoint was called.

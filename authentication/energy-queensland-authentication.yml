@@ -1,0 +1,111 @@
+generated: '2026-07-27'
+method: searched
+source: >-
+  https://consumerdatastandardsaustralia.github.io/standards/#security-profile
+  (DSB Consumer Data Standards v1.36.0), plus live probes of Ergon Energy
+  Retail's registered CDR hosts on 2026-07-27.
+docs: https://consumerdatastandardsaustralia.github.io/standards/#security-profile
+description: >-
+  Energy Queensland's API estate has exactly two authentication postures, and
+  the line between them is statutory rather than commercial. Everything a
+  member of the public can reach is completely unauthenticated - no key, no
+  signup, no terms click-through, only an x-v version header. Everything about
+  an identifiable customer is behind the full Consumer Data Right security
+  profile: ACCC accreditation, mutual TLS with CDR Register-issued certificates,
+  FAPI 1.0 Advanced OAuth2 with private_key_jwt client authentication, OIDC, and
+  per-consumer consent. There is no middle tier, no partner key, no commercial
+  API deal, and no self-serve credential of any kind.
+  NOTE ON PROVENANCE: the harvested OpenAPI documents declare NO securitySchemes
+  at all (components.securitySchemes is empty in both cds_energy 1.36.0 and
+  cds_common 1.36.0) because the DSB publishes the security model in the
+  Security Profile section of the standard rather than in the swagger. This
+  profile was therefore read from the standard and from live behaviour, not
+  derived by 0-working/derive-authentication.py, which found nothing to derive.
+summary:
+  types: [none, oauth2, openIdConnect, mutualTLS]
+  api_key_in: []
+  oauth2_flows: [authorizationCode]
+  public_surface_requires_credentials: false
+  gated_surface_requires_accreditation: true
+schemes:
+  - name: none (public CDR surface)
+    type: none
+    applies_to:
+      - listEnergyPlans
+      - getEnergyPlanDetail
+      - getStatus
+      - getOutages
+    hosts:
+      - https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
+      - https://public.cdr.ergonretail.com.au/cds-au/v1
+    required_headers:
+      - name: x-v
+        required: true
+        description: >-
+          Requested endpoint version. Mandatory. Omitting it returns HTTP 400
+          urn:au-cds:error:cds-all:Header/Missing - verified live 2026-07-27.
+    optional_headers:
+      - name: x-min-v
+        description: Minimum acceptable endpoint version.
+      - name: x-fapi-interaction-id
+        description: >-
+          RFC 4122 UUID correlation id. Played back verbatim in the response -
+          verified live 2026-07-27 against the AER-hosted plans endpoint.
+    evidence: >-
+      GET https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1/energy/plans with
+      only "x-v: 1" returned HTTP 200 with 36 Ergon plans on 2026-07-27, and
+      GET https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
+      returned HTTP 200 status OK. No credential of any kind was sent.
+  - name: CDR mutual TLS (transport)
+    type: mutualTLS
+    applies_to: all consumer-authorised energy and common operations
+    host: https://api.cdr.ergonretail.com.au
+    evidence: >-
+      The resource host resolves and its TLS handshake emits "Request CERT (13)"
+      backed by a private CDR certificate chain - the server demands a client
+      certificate issued by the CDR Register certificate authority. Observed
+      directly; no endpoint behind the gate was called.
+    certificate_authority: CDR Register (ACCC) private CA - transport and signing certificates
+  - name: CDR OAuth2 / FAPI 1.0 Advanced
+    type: oauth2
+    flows:
+      - flow: authorizationCode
+        authorizationUrl: not publicly discoverable
+        tokenUrl: not publicly discoverable
+        scopes_detail: scopes/energy-queensland-scopes.yml
+    client_authentication: private_key_jwt
+    token_binding: mutual-TLS sender-constrained access tokens
+    features:
+      - Pushed Authorization Requests (PAR)
+      - PKCE
+      - request object signing (JARM where applicable)
+      - CDR Arrangement Revocation endpoint
+      - consumer dashboard for consent review and revocation (mandated)
+    registration: >-
+      Dynamic Client Registration using a software statement assertion issued by
+      the CDR Register to an accredited data recipient software product.
+  - name: OpenID Connect
+    type: openIdConnect
+    openIdConnectUrl: not publicly discoverable
+    evidence: >-
+      Anonymous OIDC discovery was attempted and refused by design. On
+      2026-07-27 GET /.well-known/openid-configuration returned HTTP 404 on
+      public.cdr.ergonretail.com.au and on cdr.energymadeeasy.gov.au, and
+      /.well-known/oauth-authorization-server returned 404 on both. A CDR data
+      holder publishes its infosec base URI through the authenticated portion of
+      the CDR Register, so no OIDC metadata document is fetchable without
+      accreditation. See well-known/energy-queensland-well-known.yml.
+onboarding:
+  self_serve: false
+  steps:
+    - Apply to the ACCC for accreditation as a CDR data recipient (unrestricted or sponsored), or operate under the CDR representative / trusted adviser pathways.
+    - Obtain client credentials plus transport and signing certificates from the CDR Register certificate authority.
+    - Complete Conformance Test Suite (CTS) testing.
+    - Register the software product and complete Dynamic Client Registration with the data holder.
+    - Initiate a consent flow that the individual Ergon Energy Retail customer approves.
+  gate: statutory, not commercial
+related:
+  scopes: scopes/energy-queensland-scopes.yml
+  conventions: conventions/energy-queensland-conventions.yml
+  conformance: conformance/energy-queensland-conformance.yml
+  well_known: well-known/energy-queensland-well-known.yml

@@ -1,0 +1,156 @@
+generated: '2026-07-27'
+method: searched
+source: >-
+  https://consumerdatastandardsaustralia.github.io/standards/ (High Level
+  Standards - HTTP Headers, Pagination, Error Codes, Versioning; and
+  Non-functional Requirements), verified against live responses from
+  https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1 and
+  https://public.cdr.ergonretail.com.au/cds-au/v1 on 2026-07-27.
+description: >-
+  The cross-cutting request/response semantics of Ergon Energy Retail's Consumer
+  Data Right surface. None of this is Energy Queensland's design - every
+  convention here is mandated identically for all 84 registered Australian
+  energy data holder brands by the Treasury Data Standards Body, which is the
+  point: a company with no developer programme inherited a complete,
+  well-specified runtime contract because a statute pointed at it. Where a
+  convention was confirmed by an actual call on 2026-07-27 it is marked
+  verified: live.
+base_urls:
+  product_reference_data: https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
+  discovery: https://public.cdr.ergonretail.com.au/cds-au/v1
+  consumer_data: not publicly discoverable (accredited data recipients only, mTLS)
+api_style: REST over HTTPS, JSON responses, no request bodies except the four POST "for specific" operations
+uri_structure:
+  pattern: https://<holder-path>/cds-au/v<major version>/<industry>/<resource>
+  note: >-
+    The cds-au/v1 major version is embedded in the path and is versioned with
+    the high-level standard. Individual endpoints are versioned separately by
+    header (see versioning below).
+authentication:
+  public: none - x-v header only
+  gated: FAPI 1.0 Advanced OAuth2 + OIDC over mutual TLS, accredited data recipients only
+  detail: authentication/energy-queensland-authentication.yml
+idempotency:
+  supported: false
+  reason: >-
+    The CDR energy surface is read-only. Twenty-three of the twenty-seven
+    operations are GET; the four POST operations (Get Balances / Billing /
+    Invoices For Specific Accounts, Get Usage / DER For Specific Service Points)
+    use POST only to carry a list of ids in a request body and create nothing.
+    The Consumer Data Standards define no idempotency key header, and none was
+    observed. No Idempotency pointer is wired in apis.yml - there is no
+    idempotency contract to point at.
+versioning:
+  scheme: per-endpoint version negotiated by HTTP header, over a path-embedded major version
+  request_headers:
+    x-v: Requested endpoint version. Mandatory on every call.
+    x-min-v: Optional minimum acceptable version; the holder returns the highest version between x-min-v and x-v.
+  response_headers:
+    x-v: The version actually served.
+  verified: live
+  observed:
+    - "GET /energy/plans with x-v: 1 -> HTTP 200, response x-v: 1 (max supported version is 1)"
+    - "GET /energy/plans/{planId} with x-v: 1 -> HTTP 406 'Header x-v lower than minimum supported [x-v=1, min=3]'; x-v: 3 -> HTTP 200"
+    - "GET /discovery/status with x-v: 1 -> HTTP 200"
+  detail: lifecycle/energy-queensland-lifecycle.yml
+  docs: https://consumerdatastandardsaustralia.github.io/standards/#versioning
+request_tracing:
+  header: x-fapi-interaction-id
+  format: RFC 4122 UUID
+  behaviour: >-
+    Client-supplied value is played back verbatim in the response; if the client
+    omits it the holder generates one. Mandatory on the response side.
+  verified: live
+  evidence: >-
+    Sent x-fapi-interaction-id 0f8b1b3a-1111-4c2b-9a5f-2b6a1c9d7e01 to
+    /energy/plans on the AER host and received the identical value back in the
+    X-Fapi-Interaction-Id response header on 2026-07-27.
+  related_headers:
+    x-fapi-auth-date: Authenticated-surface only. Time the customer last logged in.
+    x-fapi-customer-ip-address: Authenticated-surface only. Present for customer-present calls, absent for unattended.
+    x-cds-client-headers: Authenticated-surface only. Base64 client headers.
+pagination:
+  style: page-number
+  applies_to: all list operations
+  request_params:
+    page: Page of results to request, 1-based. Default 1.
+    page-size: Results per page. Default 25, maximum 1000.
+  response_fields:
+    meta.totalRecords: Total records across all pages.
+    meta.totalPages: Total number of pages.
+    links.self: Current page.
+    links.first: First page.
+    links.prev: Previous page (absent on the first page).
+    links.next: Next page (absent on the last page).
+    links.last: Last page.
+  verified: live
+  observed: >-
+    GET /energy/plans?page-size=1 with x-v 1 returned meta.totalRecords 36 and
+    meta.totalPages 36 with links.self/next/last populated; at the default
+    page-size of 25 the same collection reports totalPages 2. page-size=99999
+    returns 400 Field/InvalidPageSize ("cannot be more than 1000"); page=99999
+    returns 422 Field/InvalidPage ("out of range [page=99999, totalPages=2]").
+  docs: https://consumerdatastandardsaustralia.github.io/standards/#pagination
+field_expansion:
+  supported: false
+  note: >-
+    No expand/fields/include parameter exists. Detail is served by separate
+    "detail" endpoints and versions instead (Get Generic Plan Detail, Get Energy
+    Account Detail, Get Service Point Detail), and the basic/detail split is
+    also the scope boundary.
+metadata:
+  supported: false
+  note: No customer-writable metadata - the surface is read-only.
+error_envelope:
+  format: cds-error-list (NOT RFC 9457 problem+json)
+  content_type: application/json
+  shape: '{"errors":[{"code":"urn:au-cds:error:...","title":"...","detail":"..."}]}'
+  detail: errors/energy-queensland-problem-types.yml
+  docs: https://consumerdatastandardsaustralia.github.io/standards/#error-codes
+rate_limit_signaling:
+  headers: none observed on any 200 or 4xx response
+  retry_after: >-
+    Retry-After is declared in Access-Control-Expose-Headers on the AER Product
+    Reference Data host, so it is expected on a throttled response, but no
+    throttling response was provoked.
+  thresholds: rate-limits/energy-queensland-rate-limits.yml
+  note: >-
+    The Consumer Data Standards set traffic thresholds centrally (TPS and
+    sessions per day, by traffic class) rather than requiring per-response
+    rate-limit headers. Calls above threshold may be freely throttled or
+    rejected without breaching the availability requirement.
+cors:
+  public_base_uri:
+    access-control-allow-origin: '*'
+    access-control-allow-headers: Range, x-v, x-min-v
+    access-control-expose-headers: Content-Length, x-v, x-min-v
+    access-control-max-age: 3600
+  product_reference_data_host:
+    access-control-allow-origin: '*'
+    access-control-expose-headers: x-v, Retry-After, x-fapi-interaction-id
+  verified: live
+security_headers:
+  public.cdr.ergonretail.com.au:
+    strict-transport-security: max-age=63072000; includeSubDomains
+    x-content-type-options: nosniff
+    x-frame-options: DENY
+  verified: live
+  detail: security/energy-queensland-domain-security.yml
+identifiers:
+  planId: >-
+    Brand-scoped plan identifier suffixed with the hosting system, e.g.
+    ERG1064038RRE1@EME (the @EME suffix denotes Energy Made Easy).
+  accountId: Tokenised, opaque, consent-scoped. Not a customer-facing account number.
+  servicePointId: Tokenised NMI. The plain national metering identifier appears as nationalMeteringId in service point detail.
+  note: >-
+    CDR ids on the authenticated surface are consent-scoped tokenised values -
+    the same underlying account presents different ids to different data
+    recipients, and ids do not survive consent revocation.
+  docs: https://consumerdatastandardsaustralia.github.io/standards/#id-permanence
+related:
+  authentication: authentication/energy-queensland-authentication.yml
+  scopes: scopes/energy-queensland-scopes.yml
+  errors: errors/energy-queensland-problem-types.yml
+  lifecycle: lifecycle/energy-queensland-lifecycle.yml
+  rate_limits: rate-limits/energy-queensland-rate-limits.yml
+  conformance: conformance/energy-queensland-conformance.yml

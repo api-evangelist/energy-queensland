@@ -1,0 +1,81 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the Ergon Energy Retail CDR Energy API
+  version: 1.0.0
+extends: openapi/energy-queensland-cds-energy-openapi.yml
+x-apievangelist:
+  generated: '2026-07-27'
+  method: generated
+  source: >-
+    Applies the Energy-Queensland-specific facts observed live on 2026-07-27 to
+    the shared DSB Consumer Data Standards document, which is deliberately
+    provider-neutral. The harvested specification is never mutated - it stays
+    verbatim as published by the Data Standards Body. Everything this overlay
+    adds is an observation about THIS data holder: the real server URLs (the
+    standard ships a placeholder, mtls.dh.example.com), which operations are
+    anonymously callable, and the endpoint versions this implementation actually
+    serves.
+actions:
+  - target: $.info
+    update:
+      x-apievangelist-provider: Energy Queensland
+      x-apievangelist-provider-slug: energy-queensland
+      x-apievangelist-data-holder: Ergon Energy Retail (Ergon Energy Queensland Pty Ltd, ABN 11121177802)
+      x-apievangelist-spec-provenance: >-
+        Shared DSB Consumer Data Standards CDR Energy API v1.36.0, harvested
+        verbatim from
+        https://consumerdatastandardsaustralia.github.io/standards/includes/swagger/cds_energy.json.
+        Not an Energy Queensland publication.
+      x-apievangelist-cdr-brand-id: 3a732abd-b2e1-ee11-a73d-6045bd4001ae
+      x-apievangelist-verified: '2026-07-27'
+  - target: $.servers
+    description: >-
+      Replace the standard's placeholder MTLS server with the base URIs the CDR
+      Register actually publishes for this brand.
+    update:
+      - url: https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
+        description: >-
+          Product Reference Data (productBaseUri). Hosted by the Australian
+          Energy Regulator's Energy Made Easy CDR host under the ergon brand
+          path. Unauthenticated. Serves Get Generic Plans and Get Generic Plan
+          Detail only - confirmed HTTP 200 on 2026-07-27.
+      - url: https://api.cdr.ergonretail.com.au/cds-au/v1
+        description: >-
+          Consumer data resource host. Mutual TLS with a CDR Register client
+          certificate; accredited data recipients only. Host resolves and demands
+          a client certificate; no endpoint was called.
+  - target: $.paths['/energy/plans'].get
+    update:
+      x-apievangelist-access: anonymous
+      x-apievangelist-host: https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
+      x-apievangelist-max-version-served: 1
+      x-apievangelist-verified: >-
+        HTTP 200 on 2026-07-27 with x-v 1. meta.totalRecords 36, all type
+        REGULATED, fuelType ELECTRICITY, first planId ERG1064038RRE1@EME.
+  - target: $.paths['/energy/plans/{planId}'].get
+    update:
+      x-apievangelist-access: anonymous
+      x-apievangelist-host: https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
+      x-apievangelist-min-version-served: 3
+      x-apievangelist-verified: >-
+        HTTP 406 at x-v 1 ("Header x-v lower than minimum supported [x-v=1,
+        min=3]"), HTTP 200 at x-v 3, on 2026-07-27.
+  - target: $.paths['/energy/electricity/servicepoints'].get
+    update:
+      x-apievangelist-access: accredited-only
+      x-apievangelist-secondary-data-holder: AEMO
+  - target: $.paths['/energy/electricity/servicepoints/usage'].get
+    update:
+      x-apievangelist-access: accredited-only
+      x-apievangelist-secondary-data-holder: AEMO
+  - target: $.paths['/energy/electricity/servicepoints/der'].get
+    update:
+      x-apievangelist-access: accredited-only
+      x-apievangelist-secondary-data-holder: AEMO DER Register
+  - target: $.paths['/energy/accounts'].get
+    update:
+      x-apievangelist-access: accredited-only
+      x-apievangelist-coverage-note: >-
+        Regional Queensland retail customers only. South East Queensland is
+        contestable and retailed by third parties, so an Energex-area customer's
+        consumer data comes from their own retailer, not from Energy Queensland.

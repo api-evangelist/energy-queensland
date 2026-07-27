@@ -1,0 +1,84 @@
+generated: '2026-07-27'
+method: searched
+description: >-
+  Results of probing the /.well-known/ discovery surface for every host in
+  apis.yml (baseURL and Website) and the OpenAPI servers[] on 2026-07-27.
+  NOTHING was found. Not one document returned 200 on any Energy Queensland or
+  Ergon host, so no raw file was saved and no WellKnown pointer is wired in
+  apis.yml - recording the absence is the finding, not a gap to paper over.
+  Two distinct causes are visible in the status codes. The CDR hosts answer a
+  clean 404 because a Consumer Data Right data holder publishes its infosec
+  base URI and OIDC metadata through the AUTHENTICATED portion of the CDR
+  Register rather than at a public .well-known path - the 404 is the standard
+  behaving as designed, not a misconfiguration. The three corporate websites
+  answer 403 to every path because they sit behind a Cloudflare managed
+  challenge that blocks all programmatic clients, so their .well-known surface
+  cannot be observed at all from outside a browser; that is recorded as
+  unobservable rather than as absent.
+hosts:
+  - host: https://public.cdr.ergonretail.com.au
+    role: Ergon Energy Retail registered CDR public base URI
+    server: nginx
+    documents:
+      - {path: /.well-known/security.txt, status: 404}
+      - {path: /.well-known/openid-configuration, status: 404}
+      - {path: /.well-known/oauth-authorization-server, status: 404}
+      - {path: /.well-known/oauth-protected-resource, status: 404}
+      - {path: /.well-known/api-catalog, status: 404}
+      - {path: /.well-known/ai-plugin.json, status: 404}
+  - host: https://cdr.energymadeeasy.gov.au
+    role: >-
+      AER Energy Made Easy CDR host serving Ergon-branded Product Reference Data
+      (productBaseUri https://cdr.energymadeeasy.gov.au/ergon). Not an Energy
+      Queensland host, probed because it is a registered baseURL.
+    documents:
+      - {path: /.well-known/security.txt, status: 404}
+      - {path: /.well-known/openid-configuration, status: 404}
+      - {path: /.well-known/oauth-authorization-server, status: 404}
+      - {path: /.well-known/oauth-protected-resource, status: 404}
+      - {path: /.well-known/api-catalog, status: 404}
+      - {path: /.well-known/ai-plugin.json, status: 404}
+  - host: https://cdr.energymadeeasy.gov.au/ergon
+    role: Ergon brand path on the AER host
+    documents:
+      - {path: /ergon/.well-known/security.txt, status: 404}
+      - {path: /ergon/.well-known/openid-configuration, status: 404}
+      - {path: /ergon/.well-known/oauth-authorization-server, status: 404}
+      - {path: /ergon/.well-known/oauth-protected-resource, status: 404}
+      - {path: /ergon/.well-known/api-catalog, status: 404}
+      - {path: /ergon/.well-known/ai-plugin.json, status: 404}
+  - host: https://www.energyq.com.au
+    role: Energy Queensland group website
+    note: Cloudflare managed challenge - every path returns 403 to programmatic clients, including with a browser User-Agent.
+    documents:
+      - {path: /.well-known/security.txt, status: 403}
+      - {path: /.well-known/openid-configuration, status: 403}
+      - {path: /.well-known/oauth-authorization-server, status: 403}
+      - {path: /.well-known/oauth-protected-resource, status: 403}
+      - {path: /.well-known/api-catalog, status: 403}
+      - {path: /.well-known/ai-plugin.json, status: 403}
+  - host: https://www.ergon.com.au
+    role: Ergon Energy (retail + network) website
+    note: Cloudflare managed challenge - 403 to all programmatic clients.
+    documents:
+      - {path: /.well-known/security.txt, status: 403}
+      - {path: /.well-known/openid-configuration, status: 403}
+      - {path: /.well-known/oauth-authorization-server, status: 403}
+      - {path: /.well-known/oauth-protected-resource, status: 403}
+      - {path: /.well-known/api-catalog, status: 403}
+      - {path: /.well-known/ai-plugin.json, status: 403}
+  - host: https://www.energex.com.au
+    role: Energex distribution website
+    note: Cloudflare managed challenge - 403 to all programmatic clients except /.well-known/api-catalog which returned a 404 HTML page.
+    documents:
+      - {path: /.well-known/security.txt, status: 403}
+      - {path: /.well-known/openid-configuration, status: 403}
+      - {path: /.well-known/oauth-authorization-server, status: 403}
+      - {path: /.well-known/oauth-protected-resource, status: 403}
+      - {path: /.well-known/api-catalog, status: 404}
+      - {path: /.well-known/ai-plugin.json, status: 403}
+security_txt:
+  found: false
+  note: >-
+    No RFC 9116 security.txt exists on any reachable Energy Queensland host, and
+    the corporate sites cannot be probed for one. No SecurityTxt pointer wired.

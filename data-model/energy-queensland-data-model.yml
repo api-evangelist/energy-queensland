@@ -1,0 +1,156 @@
+generated: '2026-07-27'
+method: derived
+source: >-
+  openapi/energy-queensland-cds-energy-openapi.yml and
+  openapi/energy-queensland-cds-common-openapi.yml (DSB Consumer Data Standards
+  v1.36.0) - 133 component schemas in the energy document, walked for $ref links
+  and id-reference fields.
+description: >-
+  The entity graph behind Ergon Energy Retail's Consumer Data Right surface.
+  Two disconnected halves, which is the interesting part: the PUBLIC half is a
+  single entity (EnergyPlan) that anyone can read anonymously, and the PRIVATE
+  half is a customer-rooted graph (Customer -> EnergyAccount -> ServicePoint ->
+  usage/DER/billing) that no one outside the accreditation regime can touch. The
+  only join between them is the plan reference carried on an account.
+  Note also where the data physically comes from: service point, usage and DER
+  entities originate with AEMO as the CDR secondary data holder under the Shared
+  Responsibility model, and are relayed by Ergon Energy Retail - a
+  PrimaryErrorV1 response can flag isSecondaryDataHolderError to say so.
+entities:
+  - name: EnergyPlan
+    schema: EnergyPlan
+    visibility: public
+    id_field: planId
+    id_format: Brand-scoped plan id with a hosting-system suffix, e.g. ERG1064038RRE1@EME
+    key_fields: [planId, type, fuelType, brand, brandName, customerType, displayName, effectiveFrom, effectiveTo, geography, lastUpdated]
+    detail_schema: EnergyPlanDetailV3
+    detail_components: [EnergyPlanContractFullV3, EnergyPlanTariffPeriodV2, EnergyPlanSolarFeedInTariffV3, EnergyPlanControlledLoadV2, EnergyPlanDiscounts, EnergyPlanIncentives, EnergyPlanFees, EnergyPlanEligibility, EnergyPlanGreenPowerCharges]
+    operations: [listEnergyPlans, getEnergyPlanDetail]
+    live_note: 36 records for the ergon brand, all type REGULATED (Queensland government notified prices), fuelType ELECTRICITY - observed 2026-07-27.
+  - name: Customer
+    schema: ResponseCommonCustomer_data (cds_common) - CommonPerson or CommonOrganisation, with CommonPersonDetailV2 / CommonOrganisationDetailV2 on the detail call
+    visibility: consented
+    key_fields: [customerUType, person, organisation]
+    operations: [getCustomer, getCustomerDetail]
+  - name: EnergyAccount
+    schema: EnergyAccountV2 / EnergyAccountDetailV4
+    visibility: consented
+    id_field: accountId
+    id_format: Tokenised, consent-scoped, opaque
+    key_fields: [accountId, accountNumber, displayName, creationDate, plans, openStatus]
+    operations: [listEnergyAccounts, getEnergyAccountDetail]
+  - name: EnergyServicePoint
+    schema: EnergyServicePointV2 / EnergyServicePointDetailV2
+    visibility: consented
+    id_field: servicePointId
+    key_fields: [servicePointId, nationalMeteringId, servicePointClassification, servicePointStatus, jurisdictionCode, isGenerator, validFromDate, lastUpdateDateTime, consumerProfile]
+    detail_fields: [meters, registers, distributionLossFactor, location, relatedParticipants]
+    origin: AEMO (CDR secondary data holder)
+    operations: [listElectricityServicePoints, getElectricityServicePointDetail]
+  - name: EnergyUsageRead
+    schema: EnergyUsageRead
+    visibility: consented
+    key_fields: [servicePointId, registerId, registerSuffix, meterId, readStartDate, readEndDate, unitOfMeasure, readUType, basicRead, intervalRead, controlledLoad]
+    origin: AEMO (CDR secondary data holder)
+    operations: [listElectricityUsageBulk, listElectricityUsageForServicePoints, getElectricityServicePointUsage]
+  - name: EnergyDerRecord
+    schema: EnergyDerRecord
+    visibility: consented
+    key_fields: [servicePointId, approvedCapacity, availablePhasesCount, installedPhasesCount, islandableInstallation, hasCentralProtectionControl, acConnections, derDevices, protectionMode]
+    origin: AEMO DER Register (secondary data holder)
+    operations: [listElectricityDERBulk, listElectricityDERForSpecificServicePoints, getElectricityDERForServicePoint]
+  - name: EnergyBalance
+    schema: EnergyBalanceListResponse_data_balances / EnergyBalanceResponse_data
+    visibility: consented
+    key_fields: [accountId, balance]
+    operations: [listEnergyAccountBalancesBulk, listEnergyAccountBalancesSpecificAccounts, getEnergyAccountBalance]
+  - name: EnergyInvoice
+    schema: EnergyInvoice
+    visibility: consented
+    id_field: invoiceNumber
+    key_fields: [invoiceNumber, accountId, servicePoints, issueDate, dueDate, period, invoiceAmount, gstAmount, payOnTimeDiscount, balanceAtIssue, paymentStatus, accountCharges, electricity, gas]
+    operations: [getEnergyAccountInvoices, listEnergyAccountInvoicesBulk, listEnergyInvoicesForSpecificAccounts]
+  - name: EnergyBillingTransaction
+    schema: EnergyBillingTransactionV3
+    visibility: consented
+    key_fields: [accountId, executionDateTime, transactionUType, gst, usage, demand, onceOff, otherCharges, payment]
+    variants: [EnergyBillingUsageTransactionV2, EnergyBillingDemandTransactionV3, EnergyBillingOnceOffTransaction, EnergyBillingOtherTransaction, EnergyBillingPaymentTransaction]
+    operations: [getBillingForEnergyAccount, listEnergyAccountBillingBulk, listEnergyAccountBillingForSpecificAccounts]
+  - name: EnergyConcession
+    schema: EnergyConcession
+    visibility: consented
+    key_fields: [type, displayName, additionalInfo, startDate, endDate, discountFrequency, amount, percentage, appliedTo]
+    operations: [getEnergyAccountConcessions]
+  - name: EnergyPaymentSchedule
+    schema: EnergyPaymentSchedule
+    visibility: consented
+    key_fields: [paymentScheduleUType, amount, directDebit, cardDebit, digitalWallet, manualPayment]
+    operations: [getEnergyAccountPaymentSchedule]
+relationships:
+  - from: Customer
+    to: EnergyAccount
+    type: has_many
+    via: consent scope (energy:accounts.basic:read)
+  - from: EnergyAccount
+    to: EnergyPlan
+    type: has_many
+    via: plans[].planOverview / plans[].planDetail
+    note: The only structural join between the public plan catalogue and the consented customer graph.
+  - from: EnergyAccount
+    to: EnergyServicePoint
+    type: has_many
+    via: plans[].servicePointIds
+  - from: EnergyServicePoint
+    to: EnergyUsageRead
+    type: has_many
+    via: servicePointId
+  - from: EnergyServicePoint
+    to: EnergyDerRecord
+    type: has_one
+    via: servicePointId
+  - from: EnergyServicePoint
+    to: meters
+    type: has_many
+    via: EnergyServicePointDetailV2.meters[].meterId
+  - from: meters
+    to: registers
+    type: has_many
+    via: meters[].registers[].registerId
+  - from: EnergyAccount
+    to: EnergyBalance
+    type: has_one
+    via: accountId
+  - from: EnergyAccount
+    to: EnergyInvoice
+    type: has_many
+    via: accountId
+  - from: EnergyInvoice
+    to: EnergyServicePoint
+    type: has_many
+    via: servicePoints[]
+  - from: EnergyAccount
+    to: EnergyBillingTransaction
+    type: has_many
+    via: accountId
+  - from: EnergyAccount
+    to: EnergyConcession
+    type: has_many
+    via: accountId (path parameter)
+  - from: EnergyAccount
+    to: EnergyPaymentSchedule
+    type: has_one
+    via: accountId (path parameter)
+id_domains:
+  planId: public, stable, brand-scoped
+  accountId: consent-scoped tokenised value - differs per data recipient, does not survive consent revocation
+  servicePointId: consent-scoped tokenised NMI; the plain NMI appears as nationalMeteringId in detail
+  docs: https://consumerdatastandardsaustralia.github.io/standards/#id-permanence
+gaps:
+  - >-
+    No gas entities are in scope for this provider - Ergon Energy Retail is an
+    electricity retailer, and the gas branches of the shared schema
+    (EnergyInvoiceGasUsageCharges) go unused.
+  - >-
+    Nothing in this model belongs to the DISTRIBUTION businesses. Energex and
+    Ergon Energy Network operate 2.3 million connections and publish no entity,
+    no schema and no identifier of any kind.

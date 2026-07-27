@@ -1,0 +1,55 @@
+generated: '2026-07-27'
+method: generated
+source: >-
+  Generated from openapi/energy-queensland-cds-energy-openapi.yml,
+  openapi/energy-queensland-cds-common-openapi.yml,
+  conventions/energy-queensland-conventions.yml and
+  errors/energy-queensland-problem-types.yml. Every operationId referenced in
+  every skill was grepped out of the specification - none is invented. Live
+  behaviour cited in the skills was observed on 2026-07-27.
+search_result: >-
+  No provider-published agent skills, AGENTS.md or llms.txt exists on any Energy
+  Queensland host; the corporate sites return HTTP 403 to programmatic clients
+  and the CDR hosts serve only the standardised endpoints. These skills are
+  API Evangelist generated.
+description: >-
+  Packaged operating instructions for the two things an agent can actually do
+  anonymously against Energy Queensland's API estate, plus the full accredited
+  flow for the consented surface it cannot reach. The split mirrors the finding
+  in review.yml: everything public here exists because of the Consumer Data
+  Right, and everything valuable is behind a statutory gate.
+skills:
+  - file: energy-queensland-read-ergon-tariff-plans.md
+    name: Read Ergon Energy Retail tariff plans
+    api: openapi/energy-queensland-cds-energy-openapi.yml
+    auth: none
+    operations: [listEnergyPlans, getEnergyPlanDetail]
+  - file: energy-queensland-check-cdr-availability.md
+    name: Check Ergon Energy Retail CDR availability before calling
+    api: openapi/energy-queensland-cds-common-openapi.yml
+    auth: none
+    operations: [getStatus, getOutages]
+  - file: energy-queensland-consume-accredited-energy-data.md
+    name: Consume Ergon Energy Retail consumer energy data as an accredited CDR recipient
+    api: openapi/energy-queensland-cds-energy-openapi.yml
+    auth: FAPI OAuth2 + mTLS, accredited data recipients only
+    operations:
+      - getCustomer
+      - getCustomerDetail
+      - listEnergyAccounts
+      - getEnergyAccountDetail
+      - listElectricityServicePoints
+      - getElectricityServicePointDetail
+      - listElectricityUsageBulk
+      - listElectricityUsageForServicePoints
+      - getElectricityServicePointUsage
+      - listElectricityDERBulk
+      - getElectricityDERForServicePoint
+      - listEnergyAccountBalancesBulk
+      - getEnergyAccountBalance
+      - listEnergyAccountBillingBulk
+      - getBillingForEnergyAccount
+      - listEnergyAccountInvoicesBulk
+      - getEnergyAccountInvoices
+      - getEnergyAccountConcessions
+      - getEnergyAccountPaymentSchedule

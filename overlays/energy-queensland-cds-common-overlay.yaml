@@ -1,0 +1,60 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the Ergon Energy Retail CDR Common API
+  version: 1.0.0
+extends: openapi/energy-queensland-cds-common-openapi.yml
+x-apievangelist:
+  generated: '2026-07-27'
+  method: generated
+  source: >-
+    Live observations of Ergon Energy Retail's registered CDR public base URI on
+    2026-07-27, applied over the shared DSB CDR Common API v1.36.0 document.
+    The harvested specification itself is untouched.
+actions:
+  - target: $.info
+    update:
+      x-apievangelist-provider: Energy Queensland
+      x-apievangelist-provider-slug: energy-queensland
+      x-apievangelist-data-holder: Ergon Energy Retail (Ergon Energy Queensland Pty Ltd, ABN 11121177802)
+      x-apievangelist-spec-provenance: >-
+        Shared DSB Consumer Data Standards CDR Common API v1.36.0, harvested
+        verbatim from
+        https://consumerdatastandardsaustralia.github.io/standards/includes/swagger/cds_common.json.
+        Not an Energy Queensland publication.
+      x-apievangelist-verified: '2026-07-27'
+  - target: $.servers
+    description: Replace the standard's placeholder MTLS server with this brand's registered public base URI.
+    update:
+      - url: https://public.cdr.ergonretail.com.au/cds-au/v1
+        description: >-
+          Ergon Energy Retail's registered CDR publicBaseUri. Unauthenticated.
+          Serves ONLY the two Data Holder Operations endpoints anonymously; the
+          Data Holder Customers endpoints on this document are consent-gated and
+          served from the mTLS resource host.
+      - url: https://api.cdr.ergonretail.com.au/cds-au/v1
+        description: Consumer data resource host. Mutual TLS, accredited data recipients only.
+  - target: $.paths['/discovery/status'].get
+    update:
+      x-apievangelist-access: anonymous
+      x-apievangelist-host: https://public.cdr.ergonretail.com.au/cds-au/v1
+      x-apievangelist-role: >-
+        This is the provider's entire status surface. There is no human status
+        page anywhere on the Energy Queensland estate.
+      x-apievangelist-verified: >-
+        HTTP 200 on 2026-07-27 with x-v 1 - status OK, "All services
+        operational". Response carries Strict-Transport-Security max-age
+        63072000, X-Content-Type-Options nosniff and X-Frame-Options DENY.
+  - target: $.paths['/discovery/outages'].get
+    update:
+      x-apievangelist-access: anonymous
+      x-apievangelist-host: https://public.cdr.ergonretail.com.au/cds-au/v1
+      x-apievangelist-verified: HTTP 200 on 2026-07-27 with x-v 1 and an empty outages array.
+  - target: $.paths['/common/customer'].get
+    update:
+      x-apievangelist-access: accredited-only
+      x-apievangelist-note: >-
+        Not served on the public base URI. Every path other than the two
+        discovery endpoints returns an nginx HTTP 404 there.
+  - target: $.paths['/common/customer/detail'].get
+    update:
+      x-apievangelist-access: accredited-only

@@ -1,0 +1,118 @@
+generated: '2026-07-27'
+method: probed
+source: >-
+  Live DNS/TLS/HTTP probes of the apis.yml and OpenAPI hosts via
+  0-working/probe-domain-security.py, extended with the three registrable
+  domains the automated pass did not reach (ergonretail.com.au, ergon.com.au,
+  energex.com.au) and with HSTS observed on a real 200 response rather than on a
+  HEAD to a 404 path.
+description: >-
+  Transport and DNS security posture across the Energy Queensland estate. Two
+  things stand out. First, the CDR host is the best-configured surface the group
+  operates - HSTS with a two-year max-age and includeSubDomains, nosniff, and
+  DENY framing - which is unsurprising given it was built to a mandated security
+  profile rather than by choice. Second, every domain in the group shares one
+  mail security configuration (SPF pointing at spf.energyq.com.au and Mimecast,
+  DMARC p=reject with the same reporting mailbox), a clear signature of the 2016
+  Ergon/Energex merger into a single ICT function. No Energy Queensland domain
+  has DNSSEC, and none publishes CAA records.
+hosts:
+  - host: www.energyq.com.au
+    role: Energy Queensland group website
+    https: true
+    tls_version: TLSv1.3
+    cert_expires: Sep 24 01:59:30 2026 GMT
+    hsts: null
+    note: >-
+      Behind a Cloudflare managed challenge - returns HTTP 403 to every
+      programmatic client, so response headers cannot be observed.
+  - host: cdr.energymadeeasy.gov.au
+    role: AER Energy Made Easy CDR host serving Ergon-branded Product Reference Data (not an Energy Queensland host)
+    https: true
+    tls_version: TLSv1.3
+    cert_expires: Jan 31 23:59:59 2027 GMT
+    hsts: false
+    observed_headers:
+      access-control-allow-origin: '*'
+      access-control-expose-headers: x-v, Retry-After, x-fapi-interaction-id
+    note: AWS API Gateway behind CloudFront. No HSTS header on a live 200 response.
+  - host: public.cdr.ergonretail.com.au
+    role: Ergon Energy Retail registered CDR public base URI
+    https: true
+    tls_version: TLSv1.3
+    cert_expires: Oct 18 23:59:59 2026 GMT
+    hsts: true
+    hsts_max_age: 63072000
+    hsts_include_subdomains: true
+    observed_headers:
+      strict-transport-security: max-age=63072000; includeSubDomains;
+      x-content-type-options: nosniff
+      x-frame-options: DENY
+      access-control-allow-origin: '*'
+      access-control-allow-headers: Range, x-v, x-min-v
+      access-control-max-age: '3600'
+    note: >-
+      Observed on a live HTTP 200 from /cds-au/v1/discovery/status on
+      2026-07-27. The automated probe recorded hsts null because the site root
+      404s; the header is present on real endpoints.
+  - host: api.cdr.ergonretail.com.au
+    role: Ergon Energy Retail CDR consumer-data resource host
+    https: true
+    mtls_required: true
+    note: >-
+      The TLS handshake emits "Request CERT (13)" with a private CDR certificate
+      chain - the server demands a client certificate issued by the CDR Register
+      certificate authority. No HTTP response is obtainable without one, so no
+      response headers are recorded.
+  - host: auth.cdr.ergonretail.com.au
+    role: resolves in DNS; purpose unconfirmed
+    https: true
+    note: >-
+      Serves HTTP but returns 404 at the root, at
+      /.well-known/oauth-authorization-server and at /cds-au/v1/discovery/status.
+      Recorded for what it returned; NOT assumed to be the InfoSec base URI.
+domains:
+  - domain: energyq.com.au
+    dnssec: false
+    caa: []
+    spf: true
+    dmarc: true
+    dmarc_policy: reject
+  - domain: ergonretail.com.au
+    dnssec: false
+    caa: []
+    spf: true
+    spf_record: v=spf1 include:spf.energyq.com.au include:au._netblocks.mimecast.com -all
+    dmarc: true
+    dmarc_policy: reject
+    note: The registrable domain behind both public.cdr and api.cdr - i.e. the entire CDR estate.
+  - domain: ergon.com.au
+    dnssec: false
+    caa: []
+    spf: true
+    dmarc: true
+    dmarc_policy: reject
+  - domain: energex.com.au
+    dnssec: false
+    caa: []
+    spf: true
+    spf_record: v=spf1 include:spf.energyq.com.au include:au._netblocks.mimecast.com include:amazonses.com -all
+    dmarc: true
+    dmarc_policy: reject
+  - domain: energymadeeasy.gov.au
+    dnssec: false
+    caa:
+      - 0 issuewild "amazontrust.com"
+      - 0 issuewild "awstrust.com"
+      - 0 issuewild "amazon.com"
+      - 0 issuewild "amazonaws.com"
+    spf: true
+    dmarc: true
+    dmarc_policy: quarantine
+    note: Australian Energy Regulator domain, not Energy Queensland's. The only domain in scope with CAA records.
+findings:
+  - All four Energy Queensland domains publish SPF and a DMARC policy of p=reject with a shared reporting mailbox - a strong, consistent mail posture.
+  - No domain in the group has DNSSEC enabled.
+  - No Energy Queensland domain publishes CAA records, so certificate issuance is unconstrained.
+  - HSTS is present only on the CDR public base URI, the one host built to a mandated security profile.
+  - The corporate sites are unobservable from outside a browser (Cloudflare 403), which also means no security.txt or disclosure policy page could be verified. See well-known/energy-queensland-well-known.yml.
