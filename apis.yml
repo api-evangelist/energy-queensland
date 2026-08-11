@@ -166,6 +166,8 @@ apis:
     name: Consume Ergon Energy Retail consumer energy data (accredited)
     url: skills/energy-queensland-consume-accredited-energy-data.md
 common:
+- type: MCPServer
+  url: mcp/energy-queensland-mcp.yml
 - type: AgenticAccess
   url: agentic-access/energy-queensland-agentic-access.yml
 - type: DomainSecurity
