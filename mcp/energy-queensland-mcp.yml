@@ -2,91 +2,93 @@ generated: '2026-07-27'
 method: derived
 status: candidate
 published: false
-source: >-
-  Derived from openapi/energy-queensland-cds-energy-openapi.yml and
-  openapi/energy-queensland-cds-common-openapi.yml. Searched for an official
-  server first and found none.
-search_result: >-
-  No official or hosted Model Context Protocol server exists for Energy
-  Queensland, Ergon Energy Retail, Ergon Energy Network or Energex, and none
-  exists for the Consumer Data Right energy surface generally. Nothing was found
-  in the group's GitHub organisation (2 repos, both forks of AEMO tooling), on
-  npm, or in the Consumer Data Standards. NO MCPServer pointer is wired in
-  apis.yml, because there is no MCP server - this file is an API Evangelist
-  DESIGN CANDIDATE showing what one would look like, not a provider artifact.
-description: >-
-  A candidate MCP tool surface for the Ergon Energy Retail CDR APIs. Four tools
-  are anonymously callable today by anyone; the remaining twenty-three would
-  require the MCP server itself to hold ACCC data recipient accreditation,
-  CDR Register certificates and a live consumer consent, which is a very
-  different deployment from a normal API-key MCP server and is the honest reason
-  no such server exists.
+source: Derived from openapi/energy-queensland-cds-energy-openapi.yml and openapi/energy-queensland-cds-common-openapi.yml.
+  Searched for an official server first and found none.
+search_result: No official or hosted Model Context Protocol server exists for Energy Queensland, Ergon
+  Energy Retail, Ergon Energy Network or Energex, and none exists for the Consumer Data Right energy surface
+  generally. Nothing was found in the group's GitHub organisation (2 repos, both forks of AEMO tooling),
+  on npm, or in the Consumer Data Standards. NO MCPServer pointer is wired in apis.yml, because there
+  is no MCP server - this file is an API Evangelist DESIGN CANDIDATE showing what one would look like,
+  not a provider artifact.
+description: A candidate MCP tool surface for the Ergon Energy Retail CDR APIs. Four tools are anonymously
+  callable today by anyone; the remaining twenty-three would require the MCP server itself to hold ACCC
+  data recipient accreditation, CDR Register certificates and a live consumer consent, which is a very
+  different deployment from a normal API-key MCP server and is the honest reason no such server exists.
 server:
   name: energy-queensland
   transport: http
   url: null
   auth: none for the public tools; CDR accreditation + mTLS + consented OAuth2 for the rest
 tools:
-  - name: list_ergon_energy_plans
-    description: List Ergon Energy Retail's generic (regulated) electricity plans for regional Queensland.
-    source_operation: openapi/energy-queensland-cds-energy-openapi.yml#listEnergyPlans
-    endpoint: GET https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1/energy/plans
-    auth: none
-    availability: anonymous
-    required_headers: {x-v: '1'}
-  - name: get_ergon_energy_plan_detail
-    description: Get the full tariff detail of one Ergon Energy Retail plan - rates, supply charges, solar feed-in, discounts, fees and eligibility.
-    source_operation: openapi/energy-queensland-cds-energy-openapi.yml#getEnergyPlanDetail
-    endpoint: GET https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1/energy/plans/{planId}
-    auth: none
-    availability: anonymous
-    required_headers: {x-v: '3'}
-  - name: get_ergon_cdr_status
-    description: Check whether Ergon Energy Retail's Consumer Data Right implementation is operational.
-    source_operation: openapi/energy-queensland-cds-common-openapi.yml#getStatus
-    endpoint: GET https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
-    auth: none
-    availability: anonymous
-    required_headers: {x-v: '1'}
-  - name: get_ergon_cdr_outages
-    description: List scheduled outages advertised for Ergon Energy Retail's CDR implementation.
-    source_operation: openapi/energy-queensland-cds-common-openapi.yml#getOutages
-    endpoint: GET https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/outages
-    auth: none
-    availability: anonymous
-    required_headers: {x-v: '1'}
+- name: list_ergon_energy_plans
+  description: List Ergon Energy Retail's generic (regulated) electricity plans for regional Queensland.
+  source_operation: openapi/energy-queensland-cds-energy-openapi.yml#listEnergyPlans
+  endpoint: GET https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1/energy/plans
+  auth: none
+  availability: anonymous
+  required_headers:
+    x-v: '1'
+- name: get_ergon_energy_plan_detail
+  description: Get the full tariff detail of one Ergon Energy Retail plan - rates, supply charges, solar
+    feed-in, discounts, fees and eligibility.
+  source_operation: openapi/energy-queensland-cds-energy-openapi.yml#getEnergyPlanDetail
+  endpoint: GET https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1/energy/plans/{planId}
+  auth: none
+  availability: anonymous
+  required_headers:
+    x-v: '3'
+- name: get_ergon_cdr_status
+  description: Check whether Ergon Energy Retail's Consumer Data Right implementation is operational.
+  source_operation: openapi/energy-queensland-cds-common-openapi.yml#getStatus
+  endpoint: GET https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
+  auth: none
+  availability: anonymous
+  required_headers:
+    x-v: '1'
+- name: get_ergon_cdr_outages
+  description: List scheduled outages advertised for Ergon Energy Retail's CDR implementation.
+  source_operation: openapi/energy-queensland-cds-common-openapi.yml#getOutages
+  endpoint: GET https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/outages
+  auth: none
+  availability: anonymous
+  required_headers:
+    x-v: '1'
 gated_tools:
-  note: >-
-    These would be real tools with real input schemas (every one has a published
-    operationId, parameters and response schema in the harvested OpenAPI), but
-    no MCP server can call them without accreditation, mutual TLS and a specific
-    customer's consent. Listed so the surface is recorded, not silently dropped.
+  note: These would be real tools with real input schemas (every one has a published operationId, parameters
+    and response schema in the harvested OpenAPI), but no MCP server can call them without accreditation,
+    mutual TLS and a specific customer's consent. Listed so the surface is recorded, not silently dropped.
   requires: ACCC CDR data recipient accreditation + mTLS + consented FAPI OAuth2
   operations:
-    - listEnergyAccounts
-    - getEnergyAccountDetail
-    - getEnergyAccountBalance
-    - listEnergyAccountBalancesBulk
-    - listEnergyAccountBalancesSpecificAccounts
-    - getBillingForEnergyAccount
-    - listEnergyAccountBillingBulk
-    - listEnergyAccountBillingForSpecificAccounts
-    - getEnergyAccountInvoices
-    - listEnergyAccountInvoicesBulk
-    - listEnergyInvoicesForSpecificAccounts
-    - getEnergyAccountConcessions
-    - getEnergyAccountPaymentSchedule
-    - listElectricityServicePoints
-    - getElectricityServicePointDetail
-    - listElectricityUsageBulk
-    - listElectricityUsageForServicePoints
-    - getElectricityServicePointUsage
-    - listElectricityDERBulk
-    - listElectricityDERForSpecificServicePoints
-    - getElectricityDERForServicePoint
-    - getCustomer
-    - getCustomerDetail
+  - listEnergyAccounts
+  - getEnergyAccountDetail
+  - getEnergyAccountBalance
+  - listEnergyAccountBalancesBulk
+  - listEnergyAccountBalancesSpecificAccounts
+  - getBillingForEnergyAccount
+  - listEnergyAccountBillingBulk
+  - listEnergyAccountBillingForSpecificAccounts
+  - getEnergyAccountInvoices
+  - listEnergyAccountInvoicesBulk
+  - listEnergyInvoicesForSpecificAccounts
+  - getEnergyAccountConcessions
+  - getEnergyAccountPaymentSchedule
+  - listElectricityServicePoints
+  - getElectricityServicePointDetail
+  - listElectricityUsageBulk
+  - listElectricityUsageForServicePoints
+  - getElectricityServicePointUsage
+  - listElectricityDERBulk
+  - listElectricityDERForSpecificServicePoints
+  - getElectricityDERForServicePoint
+  - getCustomer
+  - getCustomerDetail
 coverage:
   operations_total: 27
   tools_anonymous: 4
   operations_gated: 23
+deployment:
+  mode: none
+  verified: derived
+  tools: 4
+  checked: '2026-08-12'
+  source: catalog MCP census
