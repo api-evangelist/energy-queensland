@@ -42,7 +42,7 @@ tags:
 - Open Data
 created: '2026-07-27'
 modified: '2026-07-27'
-specificationVersion: '0.19'
+specificationVersion: '0.23'
 apis:
 - aid: energy-queensland:ergon-energy-retail-cdr-energy-product-reference-data-api
   name: Ergon Energy Retail CDR Energy Product Reference Data API
