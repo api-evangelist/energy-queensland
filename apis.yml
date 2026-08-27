@@ -44,35 +44,16 @@ created: '2026-07-27'
 modified: '2026-07-27'
 specificationVersion: '0.23'
 apis:
-- aid: energy-queensland:ergon-energy-retail-cdr-energy-product-reference-data-api
-  name: Ergon Energy Retail CDR Energy Product Reference Data API
-  description: >-
-    The unauthenticated Consumer Data Right Product Reference Data surface for Energy Queensland's
-    retail brand, Ergon Energy Retail - Get Generic Plans and Get Generic Plan Detail from the
-    Consumer Data Standards CDR Energy API. In CDR energy, unlike CDR banking, generic plan data is
-    not served by the data holder's own host: it is served centrally by the Australian Energy
-    Regulator's Energy Made Easy CDR host under a per-brand path, and the ACCC CDR Register exposes
-    that path as productBaseUri from register version x-v 2 onwards. Confirmed live 2026-07-27:
-    GET /cds-au/v1/energy/plans with header x-v 1 returned HTTP 200 and meta.totalRecords 36 with
-    meta.totalPages 36; the first record is planId ERG1064038RRE1@EME, brand "ergon", brandName
-    "Ergon Energy", fuelType ELECTRICITY, type REGULATED, geography.distributors ["Ergon"] with
-    several hundred regional Queensland postcodes. Plan detail requires x-v 3 or higher - x-v 1
-    returns urn:au-cds:error:cds-all:Header/UnsupportedVersion with HTTP 406, x-v 3 returns HTTP 200.
-    The plan type is worth noting: Ergon Energy Retail sells Queensland government notified prices in
-    regional Queensland, so these 36 plans are REGULATED rather than MARKET offers. No API key, no
-    signup and no accreditation is needed to call it.
+- aid: energy-queensland:energy-queensland-data-holder-customers-api
+  name: Energy Queensland Data Holder Customers API
+  description: Data Holder Customer endpoints
   humanURL: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
   baseURL: https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
   tags:
-  - Energy Plans
-  - Product Reference Data
-  - Consumer Data Right
-  - Tariffs
-  - Regulated Prices
-  - Australia
+  - Data Holder Customers
   properties:
   - type: OpenAPI
-    url: openapi/energy-queensland-cds-energy-openapi.yml
+    url: openapi/energy-queensland-data-holder-customers-api-openapi.yml
   - type: APIReference
     url: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
   - type: APIReference
@@ -83,89 +64,263 @@ apis:
     url: https://consumerdatastandardsaustralia.github.io/standards/
   - type: Registry
     url: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
-  - type: Overlay
-    url: overlays/energy-queensland-cds-energy-overlay.yaml
-  - type: AgentSkill
-    name: Read Ergon Energy Retail tariff plans
-    url: skills/energy-queensland-read-ergon-tariff-plans.md
-- aid: energy-queensland:ergon-energy-retail-cdr-discovery-api
-  name: Ergon Energy Retail CDR Discovery API
-  description: >-
-    Ergon Energy Retail's own registered Consumer Data Right public base URI, serving the two
-    unauthenticated Data Holder Operations endpoints of the Consumer Data Standards CDR Common API -
-    Get Status and Get Outages. This is the only anonymously callable API surface hosted on an Energy
-    Queensland controlled domain. Confirmed live 2026-07-27: GET /cds-au/v1/discovery/status with
-    header x-v 1 returned HTTP 200 and the CDS envelope {"data":{"status":"OK","updateTime":
-    "2026-07-27T12:08:30Z","explanation":"All services operational"},"links":{...},"meta":{}}, and
-    GET /cds-au/v1/discovery/outages returned HTTP 200 with an empty outages array. The base URI
-    serves nothing else anonymously - /cds-au/v1/energy/plans, the site root and
-    /.well-known/openid-configuration all return an nginx HTTP 404.
-  humanURL: https://consumerdatastandardsaustralia.github.io/standards/#common-apis
-  baseURL: https://public.cdr.ergonretail.com.au/cds-au/v1
-  tags:
-  - Discovery
-  - Status
-  - Outages
-  - Consumer Data Right
-  - Australia
-  properties:
-  - type: OpenAPI
-    url: openapi/energy-queensland-cds-common-openapi.yml
   - type: APIReference
     url: https://consumerdatastandardsaustralia.github.io/standards/#get-status
   - type: APIReference
     url: https://consumerdatastandardsaustralia.github.io/standards/#get-outages
   - type: Status
     url: https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
-  - type: Documentation
-    url: https://consumerdatastandardsaustralia.github.io/standards/
-  - type: Overlay
-    url: overlays/energy-queensland-cds-common-overlay.yaml
-  - type: AgentSkill
-    name: Check Ergon Energy Retail CDR availability
-    url: skills/energy-queensland-check-cdr-availability.md
-- aid: energy-queensland:ergon-energy-retail-cdr-energy-consumer-data-api
-  name: Ergon Energy Retail CDR Energy Consumer Data API
-  description: >-
-    The consumer-authorised half of the Consumer Data Right energy obligation that Ergon Energy
-    Queensland Pty Ltd is designated to meet as a data holder - electricity service points, usage,
-    distributed energy resources, energy accounts, balances, invoices, billing, concessions and
-    payment schedules, sixteen paths in all from the Consumer Data Standards CDR Energy API. This
-    surface is real and mandated, but it is not open: it is reachable only by an ACCC-accredited CDR
-    data recipient, over mutual TLS with FAPI-profile OAuth2 and OpenID Connect, after the individual
-    customer grants consent, and the infosec base URI is published only through the authenticated
-    portion of the CDR Register. No baseURL is recorded here because none is publicly discoverable
-    and no endpoint on this surface was called. What was observed, and is recorded as behavioural
-    evidence rather than a call, is that the host api.cdr.ergonretail.com.au resolves
-    (16.176.214.208, 15.134.24.248, 15.134.170.191) and its TLS handshake emits a Request CERT
-    message backed by a private certificate chain - the mTLS gate the Consumer Data Standards
-    security profile requires. The mandate is verified; the endpoints are, by design, unverifiable
-    from outside the accreditation regime.
-  humanURL: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
-  tags:
-  - Energy Accounts
-  - Electricity Usage
-  - Billing
-  - Distributed Energy Resources
-  - Consumer Data Right
-  - Australia
-  properties:
-  - type: OpenAPI
-    url: openapi/energy-queensland-cds-energy-openapi.yml
-  - type: APIReference
-    url: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
   - type: Authentication
     url: https://consumerdatastandardsaustralia.github.io/standards/#security-profile
-  - type: Documentation
-    url: https://consumerdatastandardsaustralia.github.io/standards/
-  - type: Overlay
-    url: overlays/energy-queensland-cds-energy-overlay.yaml
   - type: OAuthScopes
     url: scopes/energy-queensland-scopes.yml
-  - type: AgentSkill
-    name: Consume Ergon Energy Retail consumer energy data (accredited)
-    url: skills/energy-queensland-consume-accredited-energy-data.md
+- aid: energy-queensland:energy-queensland-data-holder-operations-api
+  name: Energy Queensland Data Holder Operations API
+  description: Data Holder Operations endpoints
+  humanURL: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  baseURL: https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
+  tags:
+  - Data Holder Operations
+  properties:
+  - type: OpenAPI
+    url: openapi/energy-queensland-data-holder-operations-api-openapi.yml
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plans
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plan-detail
+  - type: Documentation
+    url: https://consumerdatastandardsaustralia.github.io/standards/
+  - type: Registry
+    url: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-status
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-outages
+  - type: Status
+    url: https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
+  - type: Authentication
+    url: https://consumerdatastandardsaustralia.github.io/standards/#security-profile
+  - type: OAuthScopes
+    url: scopes/energy-queensland-scopes.yml
+- aid: energy-queensland:energy-queensland-distributed-energy-resources-api
+  name: Energy Queensland Distributed Energy Resources API
+  description: Distributed Energy Resource endpoints
+  humanURL: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  baseURL: https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
+  tags:
+  - Distributed Energy Resources
+  properties:
+  - type: OpenAPI
+    url: openapi/energy-queensland-distributed-energy-resources-api-openapi.yml
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plans
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plan-detail
+  - type: Documentation
+    url: https://consumerdatastandardsaustralia.github.io/standards/
+  - type: Registry
+    url: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-status
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-outages
+  - type: Status
+    url: https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
+  - type: Authentication
+    url: https://consumerdatastandardsaustralia.github.io/standards/#security-profile
+  - type: OAuthScopes
+    url: scopes/energy-queensland-scopes.yml
+- aid: energy-queensland:energy-queensland-electricity-service-points-api
+  name: Energy Queensland Electricity Service Points API
+  description: Electricity Service Point endpoints
+  humanURL: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  baseURL: https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
+  tags:
+  - Electricity Service Points
+  properties:
+  - type: OpenAPI
+    url: openapi/energy-queensland-electricity-service-points-api-openapi.yml
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plans
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plan-detail
+  - type: Documentation
+    url: https://consumerdatastandardsaustralia.github.io/standards/
+  - type: Registry
+    url: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-status
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-outages
+  - type: Status
+    url: https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
+  - type: Authentication
+    url: https://consumerdatastandardsaustralia.github.io/standards/#security-profile
+  - type: OAuthScopes
+    url: scopes/energy-queensland-scopes.yml
+- aid: energy-queensland:energy-queensland-electricity-usage-api
+  name: Energy Queensland Electricity Usage API
+  description: Electricity Usage endpoints
+  humanURL: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  baseURL: https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
+  tags:
+  - Electricity Usage
+  properties:
+  - type: OpenAPI
+    url: openapi/energy-queensland-electricity-usage-api-openapi.yml
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plans
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plan-detail
+  - type: Documentation
+    url: https://consumerdatastandardsaustralia.github.io/standards/
+  - type: Registry
+    url: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-status
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-outages
+  - type: Status
+    url: https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
+  - type: Authentication
+    url: https://consumerdatastandardsaustralia.github.io/standards/#security-profile
+  - type: OAuthScopes
+    url: scopes/energy-queensland-scopes.yml
+- aid: energy-queensland:energy-queensland-energy-account-balances-api
+  name: Energy Queensland Energy Account Balances API
+  description: Energy Account Balance endpoints
+  humanURL: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  baseURL: https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
+  tags:
+  - Energy Account Balances
+  properties:
+  - type: OpenAPI
+    url: openapi/energy-queensland-energy-account-balances-api-openapi.yml
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plans
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plan-detail
+  - type: Documentation
+    url: https://consumerdatastandardsaustralia.github.io/standards/
+  - type: Registry
+    url: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-status
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-outages
+  - type: Status
+    url: https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
+  - type: Authentication
+    url: https://consumerdatastandardsaustralia.github.io/standards/#security-profile
+  - type: OAuthScopes
+    url: scopes/energy-queensland-scopes.yml
+- aid: energy-queensland:energy-queensland-energy-account-billing-api
+  name: Energy Queensland Energy Account Billing API
+  description: Energy Account Billing endpoints
+  humanURL: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  baseURL: https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
+  tags:
+  - Energy Account Billing
+  properties:
+  - type: OpenAPI
+    url: openapi/energy-queensland-energy-account-billing-api-openapi.yml
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plans
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plan-detail
+  - type: Documentation
+    url: https://consumerdatastandardsaustralia.github.io/standards/
+  - type: Registry
+    url: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-status
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-outages
+  - type: Status
+    url: https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
+  - type: Authentication
+    url: https://consumerdatastandardsaustralia.github.io/standards/#security-profile
+  - type: OAuthScopes
+    url: scopes/energy-queensland-scopes.yml
+- aid: energy-queensland:energy-queensland-energy-accounts-api
+  name: Energy Queensland Energy Accounts API
+  description: Energy Account endpoints
+  humanURL: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  baseURL: https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
+  tags:
+  - Energy Accounts
+  properties:
+  - type: OpenAPI
+    url: openapi/energy-queensland-energy-accounts-api-openapi.yml
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plans
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plan-detail
+  - type: Documentation
+    url: https://consumerdatastandardsaustralia.github.io/standards/
+  - type: Registry
+    url: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-status
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-outages
+  - type: Status
+    url: https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
+  - type: Authentication
+    url: https://consumerdatastandardsaustralia.github.io/standards/#security-profile
+  - type: OAuthScopes
+    url: scopes/energy-queensland-scopes.yml
+- aid: energy-queensland:energy-queensland-energy-plans-api
+  name: Energy Queensland Energy Plans API
+  description: Energy Plan endpoints
+  humanURL: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  baseURL: https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1
+  tags:
+  - Energy Plans
+  properties:
+  - type: OpenAPI
+    url: openapi/energy-queensland-energy-plans-api-openapi.yml
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#energy-apis
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plans
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plan-detail
+  - type: Documentation
+    url: https://consumerdatastandardsaustralia.github.io/standards/
+  - type: Registry
+    url: https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-status
+  - type: APIReference
+    url: https://consumerdatastandardsaustralia.github.io/standards/#get-outages
+  - type: Status
+    url: https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status
+  - type: Authentication
+    url: https://consumerdatastandardsaustralia.github.io/standards/#security-profile
+  - type: OAuthScopes
+    url: scopes/energy-queensland-scopes.yml
 common:
+- type: AgentSkill
+  url: skills/energy-queensland-read-ergon-tariff-plans.md
+- type: AgentSkill
+  url: skills/energy-queensland-check-cdr-availability.md
+- type: AgentSkill
+  url: skills/energy-queensland-consume-accredited-energy-data.md
 - type: MCPServer
   url: mcp/energy-queensland-mcp.yml
 - type: AgenticAccess
