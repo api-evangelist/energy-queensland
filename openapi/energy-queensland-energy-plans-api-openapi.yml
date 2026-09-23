@@ -155,7 +155,7 @@ paths:
       description: 'Obtain detailed information on a single energy plan offered openly to the market.
 
 
-        Other Versions: [v1](includes/obsolete/get-generic-plan-detail-v1.html), [v2](includes/obsolete/get-generic-plan-detail-v2.html).'
+        Other Versions: v1, v2.'
       operationId: getEnergyPlanDetail
       parameters:
       - description: ID of the specific plan requested.
@@ -220,630 +220,6 @@ paths:
       x-version-notes: The <i>dailySupplyChargeType</i> field was added in endpoint v3 as part of Standards v1.30.0. In Standards v1.32.0, the description of that field was changed to remove the default value, but it did not result in a new endpoint version. Refer to the [v1.32.0 release notes](includes/releasenotes/releasenotes.1.32.0.html) for more details.
 components:
   schemas:
-    EnergyPlanControlledLoadV2_timeOfUse:
-      properties:
-        additionalInfo:
-          description: Display text providing more information on the controlled load, for e.g., controlled load availability if specific day/time is not known. Required if _startTime_ and _endTime_ absent or if _additionalInfoUri_ provided.
-          type: string
-        additionalInfoUri:
-          description: Optional link to additional information regarding the controlled load.
-          type: string
-          x-cds-type: URIString
-        days:
-          description: The days that this time window applies to.
-          items:
-            $ref: '#/components/schemas/EnergyDaysEnum'
-          type: array
-        endTime:
-          description: The end of the time window per day for which the controlled load rate applies. Required if _startTime_ provided. Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
-          type: string
-          x-cds-type: ExternalRef
-        startTime:
-          description: The beginning of the time window per day for which the controlled load rate applies. Required if _endTime_ provided. Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
-          type: string
-          x-cds-type: ExternalRef
-      type: object
-      x-conditional:
-      - startTime
-      - endTime
-      - additionalInfo
-    EnergyPlanDetailV3_allOf:
-      properties:
-        electricityContract:
-          allOf:
-          - $ref: '#/components/schemas/EnergyPlanContractFullV3'
-          description: The details of the terms for the supply of electricity under this plan. Is mandatory if _fuelType_ is set to `ELECTRICITY` or `DUAL`.
-        gasContract:
-          allOf:
-          - $ref: '#/components/schemas/EnergyPlanContractFullV3'
-          description: The details of the terms for the supply of electricity under this plan. Is mandatory if _fuelType_ is set to `GAS` or `DUAL`.
-        meteringCharges:
-          description: Charges for metering included in the plan.
-          items:
-            $ref: '#/components/schemas/EnergyPlanDetailV3_allOf_meteringCharges'
-          type: array
-      type: object
-      x-conditional:
-      - gasContract
-      - electricityContract
-    EnergyPlanResponseV3:
-      properties:
-        data:
-          $ref: '#/components/schemas/EnergyPlanDetailV3'
-        links:
-          $ref: '#/components/schemas/Links'
-        meta:
-          $ref: '#/components/schemas/Meta'
-      required:
-      - data
-      - links
-      type: object
-    Meta:
-      type: object
-    EnergyPlanTariffPeriodV2_demandCharges:
-      properties:
-        amount:
-          description: The charge amount per measure unit exclusive of GST.
-          type: string
-          x-cds-type: AmountString
-        chargePeriod:
-          description: Charge period for the demand tariff.
-          enum:
-          - DAY
-          - MONTH
-          - TARIFF_PERIOD
-          type: string
-        days:
-          description: The days that the demand tariff applies to.
-          items:
-            $ref: '#/components/schemas/EnergyDaysEnum'
-          type: array
-        description:
-          description: Description of the charge.
-          type: string
-        displayName:
-          description: Display name of the charge.
-          type: string
-        endTime:
-          description: End of the period. Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
-          type: string
-          x-cds-type: ExternalRef
-        maxDemand:
-          description: Maximum demand for this demand tariff in kW. If present, must be higher than the value of the _minDemand_ field.
-          type: string
-          x-cds-type: AmountString
-        measureUnit:
-          allOf:
-          - $ref: '#/components/schemas/MeasureUnitEnum'
-          default: KWH
-          description: The measurement unit of charge amount. Assumed to be `KWH` if absent.
-          type: string
-        measurementPeriod:
-          description: Application period for the demand tariff.
-          enum:
-          - DAY
-          - MONTH
-          - TARIFF_PERIOD
-          type: string
-        minDemand:
-          default: '0.00'
-          description: Minimum demand for this demand tariff in kW. If absent then `0.00` is assumed.
-          type: string
-          x-cds-type: AmountString
-        startTime:
-          description: Start of the period. Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
-          type: string
-          x-cds-type: ExternalRef
-      required:
-      - amount
-      - chargePeriod
-      - displayName
-      - endTime
-      - measurementPeriod
-      - startTime
-      type: object
-    EnergyPlanTariffPeriodV2_singleRate:
-      description: Object representing a single rate. Required if _rateBlockUType_ is `singleRate`.
-      properties:
-        description:
-          description: Description of the rate.
-          type: string
-        displayName:
-          description: Display name of the rate.
-          type: string
-        generalUnitPrice:
-          description: The block rate (unit price) for any usage above the included fixed usage, in dollars per kWh inclusive of GST. Only required if _pricingModel_ field is `QUOTA`.
-          type: string
-          x-cds-type: AmountString
-        period:
-          description: Usage period for which the block rate applies. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax).
-          type: string
-          x-cds-type: ExternalRef
-        rates:
-          description: Array of rates in order of usage volume.
-          items:
-            $ref: '#/components/schemas/EnergyPlanControlledLoadV2_singleRate_rates'
-          type: array
-      required:
-      - displayName
-      - rates
-      type: object
-      x-conditional:
-      - generalUnitPrice
-    EnergyPlanTariffPeriodV2_timeOfUse:
-      properties:
-        days:
-          description: The days that this time window applies to.
-          items:
-            $ref: '#/components/schemas/EnergyDaysEnum'
-          type: array
-        endTime:
-          description: The end of the time window per day for which the rate applies. Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
-          type: string
-          x-cds-type: ExternalRef
-        startTime:
-          description: The beginning of the time window per day for which the rate applies. Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
-          type: string
-          x-cds-type: ExternalRef
-      required:
-      - days
-      - endTime
-      - startTime
-      type: object
-    Links:
-      properties:
-        self:
-          description: Fully qualified link that generated the current response document.
-          type: string
-          x-cds-type: URIString
-      required:
-      - self
-      type: object
-    EnergyPlan_geography:
-      description: Describes the geographical area that the plan is available for. If absent then it is assumed the plan is not geographically limited.
-      properties:
-        distributors:
-          description: Array of distributors for the plan. Must have at least one entry.
-          items:
-            type: string
-          type: array
-        excludedPostcodes:
-          description: Array of valid Australian postcodes that are specifically excluded from the plan. Each element is a single four digit postcode (e.g., `3000`) or a range of postcodes defined by two four digit postcodes and a hyphen (e.g., `3000-3999`).
-          items:
-            type: string
-          type: array
-        includedPostcodes:
-          description: Array of valid Australian postcodes that are included from the plan. If absent defaults to all non-excluded postcodes. Each element is a single four digit postcode (e.g., `3000`) or a range of postcodes defined by two four digit postcodes and a hyphen (e.g., `3000-3999`).
-          items:
-            type: string
-          type: array
-      required:
-      - distributors
-      type: object
-    EnergyPlanFees:
-      properties:
-        amount:
-          description: The fee amount. Required if _term_ is not `PERCENT_OF_BILL`.
-          type: string
-          x-cds-type: AmountString
-        description:
-          description: A description of the fee.
-          type: string
-        rate:
-          description: The fee rate. Required if _term_ is `PERCENT_OF_BILL`.
-          type: string
-          x-cds-type: RateString
-        term:
-          description: The term of the fee.
-          enum:
-          - FIXED
-          - 1_YEAR
-          - 2_YEAR
-          - 3_YEAR
-          - 4_YEAR
-          - 5_YEAR
-          - PERCENT_OF_BILL
-          - ANNUAL
-          - DAILY
-          - WEEKLY
-          - MONTHLY
-          - BIANNUAL
-          - VARIABLE
-          type: string
-        type:
-          description: The type of the fee.
-          enum:
-          - EXIT
-          - ESTABLISHMENT
-          - LATE_PAYMENT
-          - DISCONNECTION
-          - DISCONNECT_MOVE_OUT
-          - DISCONNECT_NON_PAY
-          - RECONNECTION
-          - CONNECTION
-          - PAYMENT_PROCESSING
-          - CC_PROCESSING
-          - CHEQUE_DISHONOUR
-          - DD_DISHONOUR
-          - MEMBERSHIP
-          - CONTRIBUTION
-          - PAPER_BILL
-          - OTHER
-          type: string
-      required:
-      - term
-      - type
-      type: object
-      x-conditional:
-      - amount
-      - rate
-    EnergyPlanGreenPowerCharges_tiers:
-      properties:
-        amount:
-          description: The amount of the charge if the type implies the application of a fixed amount.
-          type: string
-          x-cds-type: AmountString
-        percentGreen:
-          description: The upper percentage of green power used applicable for this tier.
-          type: string
-          x-cds-type: RateString
-        rate:
-          description: The rate of the charge if the type implies the application of a rate.
-          type: string
-          x-cds-type: RateString
-      required:
-      - percentGreen
-      type: object
-      x-conditional:
-      - rate
-      - amount
-    EnergyPlanDiscounts_percentOfBill:
-      description: Required if _methodUType_ is `percentOfBill`.
-      properties:
-        rate:
-          description: The rate of the discount applied to the bill amount.
-          type: string
-          x-cds-type: RateString
-      required:
-      - rate
-      type: object
-    EnergyPlanControlledLoadV2_timeOfUseRates:
-      properties:
-        dailySupplyCharge:
-          description: The daily supply charge (exclusive of GST) for this controlled load tier.
-          type: string
-          x-cds-type: AmountString
-        description:
-          description: Description of the controlled load rate.
-          type: string
-        displayName:
-          description: Display name of the controlled load rate.
-          type: string
-        period:
-          default: P1Y
-          description: Usage period for which the block rate applies. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax). Defaults to `P1Y` if absent.
-          type: string
-          x-cds-type: ExternalRef
-        rates:
-          description: Array of controlled load rates in order of usage volume.
-          items:
-            $ref: '#/components/schemas/EnergyPlanControlledLoadV2_singleRate_rates'
-          type: array
-        timeOfUse:
-          description: Array of time windows for which this time of use rate applies.
-          items:
-            $ref: '#/components/schemas/EnergyPlanControlledLoadV2_timeOfUse'
-          type: array
-        type:
-          description: The type of usage that the rate applies to.
-          enum:
-          - PEAK
-          - OFF_PEAK
-          - SHOULDER
-          - SOLAR_SPONGE
-          type: string
-      required:
-      - displayName
-      - rates
-      - timeOfUse
-      - type
-      type: object
-    EnergyPlanTariffPeriodV2_bandedDailySupplyCharges:
-      properties:
-        measureUnit:
-          allOf:
-          - $ref: '#/components/schemas/MeasureUnitEnum'
-          default: DAYS
-          description: The measurement unit of rate. Assumed to be `DAYS` if absent.
-          type: string
-        unitPrice:
-          description: The amount of daily supply charge for the band, in dollars per day exclusive of GST.
-          type: string
-          x-cds-type: AmountString
-        volume:
-          description: Volume the charge applies to.
-          type: number
-      required:
-      - unitPrice
-      type: object
-    MeasureUnitEnum:
-      enum:
-      - KWH
-      - KVA
-      - KVAR
-      - KVARH
-      - KW
-      - DAYS
-      - METER
-      - MONTH
-      type: string
-    LinksPaginated:
-      properties:
-        first:
-          description: URI to the first page of this set. Mandatory if this response is not the first page.
-          type: string
-          x-cds-type: URIString
-        last:
-          description: URI to the last page of this set. Mandatory if this response is not the last page.
-          type: string
-          x-cds-type: URIString
-        next:
-          description: URI to the next page of this set. Mandatory if this response is not the last page.
-          type: string
-          x-cds-type: URIString
-        prev:
-          description: URI to the previous page of this set. Mandatory if this response is not the first page.
-          type: string
-          x-cds-type: URIString
-        self:
-          description: Fully qualified link that generated the current response document.
-          type: string
-          x-cds-type: URIString
-      required:
-      - self
-      type: object
-      x-conditional:
-      - first
-      - prev
-      - next
-      - last
-    EnergyPlanDetailV3_allOf_meteringCharges:
-      properties:
-        description:
-          description: Description of the charge.
-          type: string
-        displayName:
-          description: Display name of the charge.
-          type: string
-        maximumValue:
-          description: The upper limit of the charge if the charge could occur in a range.
-          type: string
-          x-cds-type: AmountString
-        minimumValue:
-          description: Minimum value of the charge if the charge is a range or the absolute value of the charge if no range is specified.
-          type: string
-          x-cds-type: AmountString
-        period:
-          description: The charges that occur on a schedule indicates the frequency. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax).
-          type: string
-          x-cds-type: ExternalRef
-      required:
-      - displayName
-      - minimumValue
-      type: object
-    EnergyPlanId:
-      description: The unique identifier for the Energy plan.
-      type: string
-      x-cds-type: ASCIIString
-    EnergyPlanContractFullV3_allOf:
-      properties:
-        benefitPeriod:
-          description: Description of the benefit period. Should only be present if _termType_ has the value `ONGOING`.
-          type: string
-        billFrequency:
-          description: An array of the available billing schedules for this contract. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax).
-          items:
-            type: string
-          type: array
-        coolingOffDays:
-          description: Number of days in the cooling off period for the contract. Mandatory for plans with type of `MARKET`.
-          type: integer
-          x-cds-type: PositiveInteger
-        meterTypes:
-          description: An array of the meter types that this contract is available for.
-          items:
-            type: string
-          type: array
-        termType:
-          description: The term for the contract. If absent assumes no specified term.
-          enum:
-          - 1_YEAR
-          - 2_YEAR
-          - 3_YEAR
-          - 4_YEAR
-          - 5_YEAR
-          - ONGOING
-          - OTHER
-          type: string
-        terms:
-          description: Free text description of the terms for the contract.
-          type: string
-      required:
-      - billFrequency
-      type: object
-      x-conditional:
-      - benefitPeriod
-      - variation
-      - coolingOffDays
-    EnergyPlanDiscounts_fixedAmount:
-      description: Required if _methodUType_ is `fixedAmount`.
-      properties:
-        amount:
-          description: The amount of the discount.
-          type: string
-          x-cds-type: AmountString
-      required:
-      - amount
-      type: object
-    EnergyPlanTariffPeriodV2_timeOfUseRates:
-      properties:
-        description:
-          description: Description of the rate.
-          type: string
-        displayName:
-          description: Display name of the rate.
-          type: string
-        period:
-          default: P1Y
-          description: Usage period for which the block rate applies. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax). Defaults to `P1Y` if absent.
-          type: string
-          x-cds-type: ExternalRef
-        rates:
-          description: Array of rates in order of usage volume.
-          items:
-            $ref: '#/components/schemas/EnergyPlanControlledLoadV2_singleRate_rates'
-          type: array
-        timeOfUse:
-          description: Array of time windows for which this time of use rate applies.
-          items:
-            $ref: '#/components/schemas/EnergyPlanTariffPeriodV2_timeOfUse'
-          type: array
-        type:
-          description: The type of usage that the rate applies to.
-          enum:
-          - PEAK
-          - OFF_PEAK
-          - SHOULDER
-          - SHOULDER1
-          - SHOULDER2
-          type: string
-      required:
-      - displayName
-      - rates
-      - timeOfUse
-      - type
-      type: object
-    EnergyPlanSolarFeedInTariffV3_singleTariff_rates:
-      properties:
-        measureUnit:
-          allOf:
-          - $ref: '#/components/schemas/MeasureUnitEnum'
-          default: KWH
-          description: The measurement unit of rate. Assumed to be `KWH` if absent.
-          type: string
-        unitPrice:
-          description: Unit price of usage per measure unit (exclusive of GST).
-          type: string
-          x-cds-type: AmountString
-        volume:
-          description: Volume that this rate applies to. Only applicable for 'stepped' rates where different rates apply for different volumes of usage in a period.
-          type: number
-      required:
-      - unitPrice
-      type: object
-    EnergyPlanControlledLoadV2_singleRate_rates:
-      properties:
-        measureUnit:
-          allOf:
-          - $ref: '#/components/schemas/MeasureUnitEnum'
-          default: KWH
-          description: The measurement unit of rate. Assumed to be `KWH` if absent.
-          type: string
-        unitPrice:
-          description: Unit price of usage per measure unit (exclusive of GST).
-          type: string
-          x-cds-type: AmountString
-        volume:
-          description: Volume in kWh that this rate applies to. Only applicable for 'stepped' rates where different rates apply for different volumes of usage in a period.
-          type: number
-      required:
-      - unitPrice
-      type: object
-    MetaPaginated:
-      properties:
-        totalPages:
-          description: The total number of pages in the full set. See [pagination](#pagination).
-          type: integer
-          x-cds-type: NaturalNumber
-        totalRecords:
-          description: The total number of records in the full set. See [pagination](#pagination).
-          type: integer
-          x-cds-type: NaturalNumber
-      required:
-      - totalPages
-      - totalRecords
-      type: object
-    EnergyPlan_additionalInformation:
-      description: Object that contains links to additional information on specific topics.
-      properties:
-        bundleUri:
-          description: A link to detail on bundles that this plan can be a part of.
-          type: string
-          x-cds-type: URIString
-        eligibilityUri:
-          description: A link to detail on eligibility criteria for the plan.
-          type: string
-          x-cds-type: URIString
-        overviewUri:
-          description: A link to a general overview of the plan.
-          type: string
-          x-cds-type: URIString
-        pricingUri:
-          description: A link to detail on pricing for the plan.
-          type: string
-          x-cds-type: URIString
-        termsUri:
-          description: A link to terms and conditions for the plan.
-          type: string
-          x-cds-type: URIString
-      type: object
-    EnergyDaysEnum:
-      enum:
-      - SUN
-      - MON
-      - TUE
-      - WED
-      - THU
-      - FRI
-      - SAT
-      - PUBLIC_HOLIDAYS
-      type: string
-    ErrorV2_meta:
-      description: Additional data for customised error codes.
-      properties:
-        urn:
-          description: The CDR error code URN which the application-specific error code extends. Mandatory if the error _code_ is an application-specific error rather than a standardised error code.
-          type: string
-      type: object
-      x-conditional:
-      - urn
-    EnergyPlanControlledLoadV2_singleRate:
-      description: Object representing a single controlled load rate. Required if _rateBlockUType_ is `singleRate`.
-      properties:
-        dailySupplyCharge:
-          description: The daily supply charge (exclusive of GST) for this controlled load tier.
-          type: string
-          x-cds-type: AmountString
-        description:
-          description: Description of the controlled load rate.
-          type: string
-        displayName:
-          description: Display name of the controlled load rate.
-          type: string
-        period:
-          default: P1Y
-          description: Usage period for which the block rate applies. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax). Defaults to `P1Y` if absent.
-          type: string
-          x-cds-type: ExternalRef
-        rates:
-          description: Array of controlled load rates in order of usage volume.
-          items:
-            $ref: '#/components/schemas/EnergyPlanControlledLoadV2_singleRate_rates'
-          type: array
-      required:
-      - displayName
-      - rates
-      type: object
     EnergyPlanContractV3:
       properties:
         additionalFeeInformation:
@@ -939,58 +315,191 @@ components:
       - timeZone
       - variation
       - controlledLoad
-    EnergyPlanDiscounts_percentOfUse:
-      description: Required if _methodUType_ is `percentOfUse`.
+    EnergyPlanDiscounts_percentOverThreshold:
+      description: Required if _methodUType_ is `percentOverThreshold`.
       properties:
         rate:
-          description: The rate of the discount applied to the _usageamount_.
+          description: The rate of the discount over the usage amount.
           type: string
           x-cds-type: RateString
+        usageAmount:
+          description: The usage amount threshold above which the discount applies.
+          type: string
+          x-cds-type: AmountString
       required:
       - rate
+      - usageAmount
       type: object
-    EnergyPlanEligibility:
+    ErrorV2_meta:
+      description: Additional data for customised error codes.
+      properties:
+        urn:
+          description: The CDR error code URN which the application-specific error code extends. Mandatory if the error _code_ is an application-specific error rather than a standardised error code.
+          type: string
+      type: object
+      x-conditional:
+      - urn
+    EnergyPlanSolarFeedInTariffV3_timeVariations:
+      properties:
+        days:
+          description: The days that this time window applies to. At least one entry required.
+          items:
+            $ref: '#/components/schemas/EnergyDaysEnum'
+          type: array
+        endTime:
+          description: The end of the time window per day for which the tariff applies. If absent assumes end of day (i.e. one second before midnight). Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
+          type: string
+          x-cds-type: ExternalRef
+        startTime:
+          description: The beginning of the time window per day for which the tariff applies. If absent assumes start of day (i.e. midnight). Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
+          type: string
+          x-cds-type: ExternalRef
+      required:
+      - days
+      type: object
+    EnergyPlan_geography:
+      description: Describes the geographical area that the plan is available for. If absent then it is assumed the plan is not geographically limited.
+      properties:
+        distributors:
+          description: Array of distributors for the plan. Must have at least one entry.
+          items:
+            type: string
+          type: array
+        excludedPostcodes:
+          description: Array of valid Australian postcodes that are specifically excluded from the plan. Each element is a single four digit postcode (e.g., `3000`) or a range of postcodes defined by two four digit postcodes and a hyphen (e.g., `3000-3999`).
+          items:
+            type: string
+          type: array
+        includedPostcodes:
+          description: Array of valid Australian postcodes that are included from the plan. If absent defaults to all non-excluded postcodes. Each element is a single four digit postcode (e.g., `3000`) or a range of postcodes defined by two four digit postcodes and a hyphen (e.g., `3000-3999`).
+          items:
+            type: string
+          type: array
+      required:
+      - distributors
+      type: object
+    EnergyPlanGreenPowerCharges:
       properties:
         description:
-          description: A description of the eligibility restriction.
+          description: The description of the charge.
           type: string
-        information:
-          description: Information of the eligibility restriction specific to the type of the restriction.
+        displayName:
+          description: The display name of the charge.
+          type: string
+        scheme:
+          description: The applicable green power scheme.
+          enum:
+          - GREENPOWER
+          - OTHER
+          type: string
+        tiers:
+          description: Array of charge tiers based on the percentage of green power used for the period implied by the type. Array is in order of increasing percentage of green power.
+          items:
+            $ref: '#/components/schemas/EnergyPlanGreenPowerCharges_tiers'
+          type: array
+        type:
+          description: The type of charge.
+          enum:
+          - FIXED_PER_DAY
+          - FIXED_PER_WEEK
+          - FIXED_PER_MONTH
+          - FIXED_PER_UNIT
+          - PERCENT_OF_USE
+          - PERCENT_OF_BILL
+          type: string
+      required:
+      - displayName
+      - scheme
+      - tiers
+      - type
+      type: object
+    EnergyPlanControlledLoadV2_timeOfUse:
+      properties:
+        additionalInfo:
+          description: Display text providing more information on the controlled load, for e.g., controlled load availability if specific day/time is not known. Required if _startTime_ and _endTime_ absent or if _additionalInfoUri_ provided.
+          type: string
+        additionalInfoUri:
+          description: Optional link to additional information regarding the controlled load.
+          type: string
+          x-cds-type: URIString
+        days:
+          description: The days that this time window applies to.
+          items:
+            $ref: '#/components/schemas/EnergyDaysEnum'
+          type: array
+        endTime:
+          description: The end of the time window per day for which the controlled load rate applies. Required if _startTime_ provided. Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
+          type: string
+          x-cds-type: ExternalRef
+        startTime:
+          description: The beginning of the time window per day for which the controlled load rate applies. Required if _endTime_ provided. Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
+          type: string
+          x-cds-type: ExternalRef
+      type: object
+      x-conditional:
+      - startTime
+      - endTime
+      - additionalInfo
+    EnergyPlanFees:
+      properties:
+        amount:
+          description: The fee amount. Required if _term_ is not `PERCENT_OF_BILL`.
+          type: string
+          x-cds-type: AmountString
+        description:
+          description: A description of the fee.
+          type: string
+        rate:
+          description: The fee rate. Required if _term_ is `PERCENT_OF_BILL`.
+          type: string
+          x-cds-type: RateString
+        term:
+          description: The term of the fee.
+          enum:
+          - FIXED
+          - 1_YEAR
+          - 2_YEAR
+          - 3_YEAR
+          - 4_YEAR
+          - 5_YEAR
+          - PERCENT_OF_BILL
+          - ANNUAL
+          - DAILY
+          - WEEKLY
+          - MONTHLY
+          - BIANNUAL
+          - VARIABLE
           type: string
         type:
-          description: The type of the eligibility restriction.<br/>The `CONTINGENT_PLAN` value indicates that the plan is contingent on the customer taking up an alternate fuel plan from the same retailer (for instance, if the _fuelType_ is `ELECTRICITY` then a `GAS` plan from the same retailer must be taken up).
+          description: The type of the fee.
           enum:
-          - EXISTING_CUST
-          - EXISTING_POOL
-          - EXISTING_SOLAR
-          - EXISTING_BATTERY
-          - EXISTING_SMART_METER
-          - EXISTING_BASIC_METER
-          - SENIOR_CARD
-          - SMALL_BUSINESS
-          - NO_SOLAR_FIT
-          - NEW_CUSTOMER
-          - ONLINE_ONLY
-          - REQ_EQUIP_SUPPLIER
-          - THIRD_PARTY_ONLY
-          - SPORT_CLUB_MEMBER
-          - ORG_MEMBER
-          - SPECIFIC_LOCATION
-          - MINIMUM_USAGE
-          - LOYALTY_MEMBER
-          - GROUP_BUY_MEMBER
-          - CONTINGENT_PLAN
+          - EXIT
+          - ESTABLISHMENT
+          - LATE_PAYMENT
+          - DISCONNECTION
+          - DISCONNECT_MOVE_OUT
+          - DISCONNECT_NON_PAY
+          - RECONNECTION
+          - CONNECTION
+          - PAYMENT_PROCESSING
+          - CC_PROCESSING
+          - CHEQUE_DISHONOUR
+          - DD_DISHONOUR
+          - MEMBERSHIP
+          - CONTRIBUTION
+          - PAPER_BILL
           - OTHER
           type: string
       required:
-      - information
+      - term
       - type
       type: object
-    EnergyPlanSolarFeedInTariffV3_timeVaryingTariffs:
+      x-conditional:
+      - amount
+      - rate
+    EnergyPlanSolarFeedInTariffV3_singleTariff:
+      description: Represents a constant tariff. Mandatory if _tariffUType_ is set to `singleTariff`.
       properties:
-        displayName:
-          description: Display name of the tariff.
-          type: string
         period:
           default: P1Y
           description: Usage period for which the block rate applies. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax). Defaults to `P1Y` if absent.
@@ -1001,34 +510,257 @@ components:
           items:
             $ref: '#/components/schemas/EnergyPlanSolarFeedInTariffV3_singleTariff_rates'
           type: array
-        timeVariations:
-          description: Array of time windows for which this tariff is applicable.
+      required:
+      - rates
+      type: object
+    EnergyPlanTariffPeriodV2_bandedDailySupplyCharges:
+      properties:
+        measureUnit:
+          allOf:
+          - $ref: '#/components/schemas/MeasureUnitEnum'
+          default: DAYS
+          description: The measurement unit of rate. Assumed to be `DAYS` if absent.
+          type: string
+        unitPrice:
+          description: The amount of daily supply charge for the band, in dollars per day exclusive of GST.
+          type: string
+          x-cds-type: AmountString
+        volume:
+          description: Volume the charge applies to.
+          type: number
+      required:
+      - unitPrice
+      type: object
+    EnergyPlanIncentives:
+      properties:
+        category:
+          description: The type of the incentive.
+          enum:
+          - GIFT
+          - ACCOUNT_CREDIT
+          - OTHER
+          type: string
+        description:
+          description: The description of the incentive.
+          type: string
+        displayName:
+          description: The display name of the incentive.
+          type: string
+        eligibility:
+          description: A display message outlining an eligibility criteria that may apply.
+          type: string
+      required:
+      - category
+      - description
+      - displayName
+      type: object
+    EnergyPlanTariffPeriodV2_timeOfUse:
+      properties:
+        days:
+          description: The days that this time window applies to.
           items:
-            $ref: '#/components/schemas/EnergyPlanSolarFeedInTariffV3_timeVariations'
+            $ref: '#/components/schemas/EnergyDaysEnum'
+          type: array
+        endTime:
+          description: The end of the time window per day for which the rate applies. Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
+          type: string
+          x-cds-type: ExternalRef
+        startTime:
+          description: The beginning of the time window per day for which the rate applies. Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
+          type: string
+          x-cds-type: ExternalRef
+      required:
+      - days
+      - endTime
+      - startTime
+      type: object
+    EnergyPlanDetailV3:
+      allOf:
+      - $ref: '#/components/schemas/EnergyPlan'
+      - $ref: '#/components/schemas/EnergyPlanDetailV3_allOf'
+    ResponseErrorListV2:
+      properties:
+        errors:
+          description: List of errors.
+          items:
+            $ref: '#/components/schemas/ErrorV2'
+          type: array
+      required:
+      - errors
+      type: object
+    EnergyPlanControlledLoadV2_timeOfUseRates:
+      properties:
+        dailySupplyCharge:
+          description: The daily supply charge (exclusive of GST) for this controlled load tier.
+          type: string
+          x-cds-type: AmountString
+        description:
+          description: Description of the controlled load rate.
+          type: string
+        displayName:
+          description: Display name of the controlled load rate.
+          type: string
+        period:
+          default: P1Y
+          description: Usage period for which the block rate applies. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax). Defaults to `P1Y` if absent.
+          type: string
+          x-cds-type: ExternalRef
+        rates:
+          description: Array of controlled load rates in order of usage volume.
+          items:
+            $ref: '#/components/schemas/EnergyPlanControlledLoadV2_singleRate_rates'
+          type: array
+        timeOfUse:
+          description: Array of time windows for which this time of use rate applies.
+          items:
+            $ref: '#/components/schemas/EnergyPlanControlledLoadV2_timeOfUse'
           type: array
         type:
-          description: The type of the charging time period. If absent applies to all periods.
+          description: The type of usage that the rate applies to.
           enum:
           - PEAK
           - OFF_PEAK
           - SHOULDER
+          - SOLAR_SPONGE
           type: string
       required:
       - displayName
-      - timeVariations
+      - rates
+      - timeOfUse
+      - type
       type: object
-    EnergyPlanListResponse:
+    EnergyPlanContractFullV3_allOf:
       properties:
-        data:
-          $ref: '#/components/schemas/EnergyPlanListResponse_data'
-        links:
-          $ref: '#/components/schemas/LinksPaginated'
-        meta:
-          $ref: '#/components/schemas/MetaPaginated'
+        benefitPeriod:
+          description: Description of the benefit period. Should only be present if _termType_ has the value `ONGOING`.
+          type: string
+        billFrequency:
+          description: An array of the available billing schedules for this contract. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax).
+          items:
+            type: string
+          type: array
+        coolingOffDays:
+          description: Number of days in the cooling off period for the contract. Mandatory for plans with type of `MARKET`.
+          type: integer
+          x-cds-type: PositiveInteger
+        meterTypes:
+          description: An array of the meter types that this contract is available for.
+          items:
+            type: string
+          type: array
+        termType:
+          description: The term for the contract. If absent assumes no specified term.
+          enum:
+          - 1_YEAR
+          - 2_YEAR
+          - 3_YEAR
+          - 4_YEAR
+          - 5_YEAR
+          - ONGOING
+          - OTHER
+          type: string
+        terms:
+          description: Free text description of the terms for the contract.
+          type: string
       required:
-      - data
-      - links
-      - meta
+      - billFrequency
+      type: object
+      x-conditional:
+      - benefitPeriod
+      - variation
+      - coolingOffDays
+    EnergyPlanSolarFeedInTariffV3_singleTariff_rates:
+      properties:
+        measureUnit:
+          allOf:
+          - $ref: '#/components/schemas/MeasureUnitEnum'
+          default: KWH
+          description: The measurement unit of rate. Assumed to be `KWH` if absent.
+          type: string
+        unitPrice:
+          description: Unit price of usage per measure unit (exclusive of GST).
+          type: string
+          x-cds-type: AmountString
+        volume:
+          description: Volume that this rate applies to. Only applicable for 'stepped' rates where different rates apply for different volumes of usage in a period.
+          type: number
+      required:
+      - unitPrice
+      type: object
+    EnergyPlanControlledLoadV2_singleRate:
+      description: Object representing a single controlled load rate. Required if _rateBlockUType_ is `singleRate`.
+      properties:
+        dailySupplyCharge:
+          description: The daily supply charge (exclusive of GST) for this controlled load tier.
+          type: string
+          x-cds-type: AmountString
+        description:
+          description: Description of the controlled load rate.
+          type: string
+        displayName:
+          description: Display name of the controlled load rate.
+          type: string
+        period:
+          default: P1Y
+          description: Usage period for which the block rate applies. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax). Defaults to `P1Y` if absent.
+          type: string
+          x-cds-type: ExternalRef
+        rates:
+          description: Array of controlled load rates in order of usage volume.
+          items:
+            $ref: '#/components/schemas/EnergyPlanControlledLoadV2_singleRate_rates'
+          type: array
+      required:
+      - displayName
+      - rates
+      type: object
+    EnergyPlanDiscounts_fixedAmount:
+      description: Required if _methodUType_ is `fixedAmount`.
+      properties:
+        amount:
+          description: The amount of the discount.
+          type: string
+          x-cds-type: AmountString
+      required:
+      - amount
+      type: object
+    EnergyPlanListResponse_data:
+      properties:
+        plans:
+          description: Array of plans.
+          items:
+            $ref: '#/components/schemas/EnergyPlan'
+          type: array
+      required:
+      - plans
+      type: object
+    EnergyPlanControlledLoadV2_singleRate_rates:
+      properties:
+        measureUnit:
+          allOf:
+          - $ref: '#/components/schemas/MeasureUnitEnum'
+          default: KWH
+          description: The measurement unit of rate. Assumed to be `KWH` if absent.
+          type: string
+        unitPrice:
+          description: Unit price of usage per measure unit (exclusive of GST).
+          type: string
+          x-cds-type: AmountString
+        volume:
+          description: Volume in kWh that this rate applies to. Only applicable for 'stepped' rates where different rates apply for different volumes of usage in a period.
+          type: number
+      required:
+      - unitPrice
+      type: object
+    EnergyPlanContractV3_intrinsicGreenPower:
+      description: Describes intrinsic green power for the plan. If present then the plan includes a percentage of green power in the base plan. Should not be present for gas contracts.
+      properties:
+        greenPercentage:
+          description: Percentage of green power intrinsically included in the plan.
+          type: string
+          x-cds-type: RateString
+      required:
+      - greenPercentage
       type: object
     EnergyPlanSolarFeedInTariffV3:
       properties:
@@ -1082,6 +814,74 @@ components:
       x-conditional:
       - singleTariff
       - timeVaryingTariffs
+    MeasureUnitEnum:
+      enum:
+      - KWH
+      - KVA
+      - KVAR
+      - KVARH
+      - KW
+      - DAYS
+      - METER
+      - MONTH
+      type: string
+    EnergyPlanEligibility:
+      properties:
+        description:
+          description: A description of the eligibility restriction.
+          type: string
+        information:
+          description: Information of the eligibility restriction specific to the type of the restriction.
+          type: string
+        type:
+          description: The type of the eligibility restriction.<br/>The `CONTINGENT_PLAN` value indicates that the plan is contingent on the customer taking up an alternate fuel plan from the same retailer (for instance, if the _fuelType_ is `ELECTRICITY` then a `GAS` plan from the same retailer must be taken up).
+          enum:
+          - EXISTING_CUST
+          - EXISTING_POOL
+          - EXISTING_SOLAR
+          - EXISTING_BATTERY
+          - EXISTING_SMART_METER
+          - EXISTING_BASIC_METER
+          - SENIOR_CARD
+          - SMALL_BUSINESS
+          - NO_SOLAR_FIT
+          - NEW_CUSTOMER
+          - ONLINE_ONLY
+          - REQ_EQUIP_SUPPLIER
+          - THIRD_PARTY_ONLY
+          - SPORT_CLUB_MEMBER
+          - ORG_MEMBER
+          - SPECIFIC_LOCATION
+          - MINIMUM_USAGE
+          - LOYALTY_MEMBER
+          - GROUP_BUY_MEMBER
+          - CONTINGENT_PLAN
+          - OTHER
+          type: string
+      required:
+      - information
+      - type
+      type: object
+    EnergyPlanDiscounts_percentOfBill:
+      description: Required if _methodUType_ is `percentOfBill`.
+      properties:
+        rate:
+          description: The rate of the discount applied to the bill amount.
+          type: string
+          x-cds-type: RateString
+      required:
+      - rate
+      type: object
+    EnergyPlanDiscounts_percentOfUse:
+      description: Required if _methodUType_ is `percentOfUse`.
+      properties:
+        rate:
+          description: The rate of the discount applied to the _usageamount_.
+          type: string
+          x-cds-type: RateString
+      required:
+      - rate
+      type: object
     EnergyPlanDiscounts:
       properties:
         category:
@@ -1135,51 +935,213 @@ components:
       - percentOfUse
       - fixedAmount
       - percentOverThreshold
-    EnergyPlanSolarFeedInTariffV3_timeVariations:
+    EnergyPlanSolarFeedInTariffV3_timeVaryingTariffs:
       properties:
+        displayName:
+          description: Display name of the tariff.
+          type: string
+        period:
+          default: P1Y
+          description: Usage period for which the block rate applies. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax). Defaults to `P1Y` if absent.
+          type: string
+          x-cds-type: ExternalRef
+        rates:
+          description: Array of feed in rates.
+          items:
+            $ref: '#/components/schemas/EnergyPlanSolarFeedInTariffV3_singleTariff_rates'
+          type: array
+        timeVariations:
+          description: Array of time windows for which this tariff is applicable.
+          items:
+            $ref: '#/components/schemas/EnergyPlanSolarFeedInTariffV3_timeVariations'
+          type: array
+        type:
+          description: The type of the charging time period. If absent applies to all periods.
+          enum:
+          - PEAK
+          - OFF_PEAK
+          - SHOULDER
+          type: string
+      required:
+      - displayName
+      - timeVariations
+      type: object
+    EnergyPlan:
+      properties:
+        additionalInformation:
+          $ref: '#/components/schemas/EnergyPlan_additionalInformation'
+        applicationUri:
+          description: A link to an application web page where this plan can be applied for.
+          type: string
+          x-cds-type: URIString
+        brand:
+          description: The ID of the brand under which this plan is offered.
+          type: string
+          x-cds-type: ASCIIString
+        brandName:
+          description: The display name of the brand under which this plan is offered.
+          type: string
+        customerType:
+          description: The type of customer that the plan is offered to. If absent then the plan is available to all customers.
+          enum:
+          - RESIDENTIAL
+          - BUSINESS
+          type: string
+        description:
+          description: A description of the plan.
+          type: string
+        displayName:
+          description: The display name of the plan.
+          type: string
+        effectiveFrom:
+          description: The date and time from which this plan is effective (i.e. is available for origination). Used to enable the articulation of products to the regime before they are available for customers to originate.
+          type: string
+          x-cds-type: DateTimeString
+        effectiveTo:
+          description: The date and time at which this plan will be retired and will no longer be offered. Used to enable the managed deprecation of plans.
+          type: string
+          x-cds-type: DateTimeString
+        fuelType:
+          description: The fuel types covered by the plan.
+          enum:
+          - ELECTRICITY
+          - GAS
+          - DUAL
+          type: string
+        geography:
+          $ref: '#/components/schemas/EnergyPlan_geography'
+        lastUpdated:
+          description: The last date and time that the information for this plan was changed (or the creation date for the plan if it has never been altered).
+          type: string
+          x-cds-type: DateTimeString
+        planId:
+          $ref: '#/components/schemas/EnergyPlanId'
+        type:
+          description: The type of the plan.
+          enum:
+          - STANDING
+          - MARKET
+          - REGULATED
+          type: string
+      required:
+      - brand
+      - brandName
+      - fuelType
+      - lastUpdated
+      - planId
+      - type
+      type: object
+    EnergyPlanListResponse:
+      properties:
+        data:
+          $ref: '#/components/schemas/EnergyPlanListResponse_data'
+        links:
+          $ref: '#/components/schemas/LinksPaginated'
+        meta:
+          $ref: '#/components/schemas/MetaPaginated'
+      required:
+      - data
+      - links
+      - meta
+      type: object
+    EnergyPlan_additionalInformation:
+      description: Object that contains links to additional information on specific topics.
+      properties:
+        bundleUri:
+          description: A link to detail on bundles that this plan can be a part of.
+          type: string
+          x-cds-type: URIString
+        eligibilityUri:
+          description: A link to detail on eligibility criteria for the plan.
+          type: string
+          x-cds-type: URIString
+        overviewUri:
+          description: A link to a general overview of the plan.
+          type: string
+          x-cds-type: URIString
+        pricingUri:
+          description: A link to detail on pricing for the plan.
+          type: string
+          x-cds-type: URIString
+        termsUri:
+          description: A link to terms and conditions for the plan.
+          type: string
+          x-cds-type: URIString
+      type: object
+    EnergyPlanTariffPeriodV2_demandCharges:
+      properties:
+        amount:
+          description: The charge amount per measure unit exclusive of GST.
+          type: string
+          x-cds-type: AmountString
+        chargePeriod:
+          description: Charge period for the demand tariff.
+          enum:
+          - DAY
+          - MONTH
+          - TARIFF_PERIOD
+          type: string
         days:
-          description: The days that this time window applies to. At least one entry required.
+          description: The days that the demand tariff applies to.
           items:
             $ref: '#/components/schemas/EnergyDaysEnum'
           type: array
-        endTime:
-          description: The end of the time window per day for which the tariff applies. If absent assumes end of day (i.e. one second before midnight). Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
-          type: string
-          x-cds-type: ExternalRef
-        startTime:
-          description: The beginning of the time window per day for which the tariff applies. If absent assumes start of day (i.e. midnight). Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
-          type: string
-          x-cds-type: ExternalRef
-      required:
-      - days
-      type: object
-    EnergyPlanIncentives:
-      properties:
-        category:
-          description: The type of the incentive.
-          enum:
-          - GIFT
-          - ACCOUNT_CREDIT
-          - OTHER
-          type: string
         description:
-          description: The description of the incentive.
+          description: Description of the charge.
           type: string
         displayName:
-          description: The display name of the incentive.
+          description: Display name of the charge.
           type: string
-        eligibility:
-          description: A display message outlining an eligibility criteria that may apply.
+        endTime:
+          description: End of the period. Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
           type: string
+          x-cds-type: ExternalRef
+        maxDemand:
+          description: Maximum demand for this demand tariff in kW. If present, must be higher than the value of the _minDemand_ field.
+          type: string
+          x-cds-type: AmountString
+        measureUnit:
+          allOf:
+          - $ref: '#/components/schemas/MeasureUnitEnum'
+          default: KWH
+          description: The measurement unit of charge amount. Assumed to be `KWH` if absent.
+          type: string
+        measurementPeriod:
+          description: Application period for the demand tariff.
+          enum:
+          - DAY
+          - MONTH
+          - TARIFF_PERIOD
+          type: string
+        minDemand:
+          default: '0.00'
+          description: Minimum demand for this demand tariff in kW. If absent then `0.00` is assumed.
+          type: string
+          x-cds-type: AmountString
+        startTime:
+          description: Start of the period. Formatted according to [ISO 8601 Times](https://en.wikipedia.org/wiki/ISO_8601#Times). If the time is provided without a UTC offset, the time zone will be determined by the value of EnergyPlanContract.timeZone.
+          type: string
+          x-cds-type: ExternalRef
       required:
-      - category
-      - description
+      - amount
+      - chargePeriod
       - displayName
+      - endTime
+      - measurementPeriod
+      - startTime
       type: object
-    EnergyPlanDetailV3:
-      allOf:
-      - $ref: '#/components/schemas/EnergyPlan'
-      - $ref: '#/components/schemas/EnergyPlanDetailV3_allOf'
+    EnergyPlanResponseV3:
+      properties:
+        data:
+          $ref: '#/components/schemas/EnergyPlanDetailV3'
+        links:
+          $ref: '#/components/schemas/Links'
+        meta:
+          $ref: '#/components/schemas/Meta'
+      required:
+      - data
+      - links
+      type: object
     ErrorV2:
       properties:
         code:
@@ -1200,35 +1162,71 @@ components:
       type: object
       x-conditional:
       - meta
-    EnergyPlanContractV3_intrinsicGreenPower:
-      description: Describes intrinsic green power for the plan. If present then the plan includes a percentage of green power in the base plan. Should not be present for gas contracts.
+    LinksPaginated:
       properties:
-        greenPercentage:
-          description: Percentage of green power intrinsically included in the plan.
+        first:
+          description: URI to the first page of this set. Mandatory if this response is not the first page.
           type: string
-          x-cds-type: RateString
+          x-cds-type: URIString
+        last:
+          description: URI to the last page of this set. Mandatory if this response is not the last page.
+          type: string
+          x-cds-type: URIString
+        next:
+          description: URI to the next page of this set. Mandatory if this response is not the last page.
+          type: string
+          x-cds-type: URIString
+        prev:
+          description: URI to the previous page of this set. Mandatory if this response is not the first page.
+          type: string
+          x-cds-type: URIString
+        self:
+          description: Fully qualified link that generated the current response document.
+          type: string
+          x-cds-type: URIString
       required:
-      - greenPercentage
+      - self
       type: object
-    EnergyPlanContractFullV3:
-      allOf:
-      - $ref: '#/components/schemas/EnergyPlanContractV3'
-      - $ref: '#/components/schemas/EnergyPlanContractFullV3_allOf'
-    EnergyPlanDiscounts_percentOverThreshold:
-      description: Required if _methodUType_ is `percentOverThreshold`.
+      x-conditional:
+      - first
+      - prev
+      - next
+      - last
+    EnergyPlanDetailV3_allOf_meteringCharges:
       properties:
-        rate:
-          description: The rate of the discount over the usage amount.
+        description:
+          description: Description of the charge.
           type: string
-          x-cds-type: RateString
-        usageAmount:
-          description: The usage amount threshold above which the discount applies.
+        displayName:
+          description: Display name of the charge.
+          type: string
+        maximumValue:
+          description: The upper limit of the charge if the charge could occur in a range.
           type: string
           x-cds-type: AmountString
+        minimumValue:
+          description: Minimum value of the charge if the charge is a range or the absolute value of the charge if no range is specified.
+          type: string
+          x-cds-type: AmountString
+        period:
+          description: The charges that occur on a schedule indicates the frequency. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax).
+          type: string
+          x-cds-type: ExternalRef
       required:
-      - rate
-      - usageAmount
+      - displayName
+      - minimumValue
       type: object
+    EnergyDaysEnum:
+      enum:
+      - SUN
+      - MON
+      - TUE
+      - WED
+      - THU
+      - FRI
+      - SAT
+      - PUBLIC_HOLIDAYS
+      type: string
     EnergyPlanControlledLoadV2:
       properties:
         displayName:
@@ -1262,15 +1260,115 @@ components:
       x-conditional:
       - singleRate
       - timeOfUseRates
-    EnergyPlanListResponse_data:
+    EnergyPlanGreenPowerCharges_tiers:
       properties:
-        plans:
-          description: Array of plans.
-          items:
-            $ref: '#/components/schemas/EnergyPlan'
-          type: array
+        amount:
+          description: The amount of the charge if the type implies the application of a fixed amount.
+          type: string
+          x-cds-type: AmountString
+        percentGreen:
+          description: The upper percentage of green power used applicable for this tier.
+          type: string
+          x-cds-type: RateString
+        rate:
+          description: The rate of the charge if the type implies the application of a rate.
+          type: string
+          x-cds-type: RateString
       required:
-      - plans
+      - percentGreen
+      type: object
+      x-conditional:
+      - rate
+      - amount
+    Meta:
+      type: object
+    MetaPaginated:
+      properties:
+        totalPages:
+          description: The total number of pages in the full set. See [pagination](#pagination).
+          type: integer
+          x-cds-type: NaturalNumber
+        totalRecords:
+          description: The total number of records in the full set. See [pagination](#pagination).
+          type: integer
+          x-cds-type: NaturalNumber
+      required:
+      - totalPages
+      - totalRecords
+      type: object
+    EnergyPlanId:
+      description: The unique identifier for the Energy plan.
+      type: string
+      x-cds-type: ASCIIString
+    EnergyPlanContractFullV3:
+      allOf:
+      - $ref: '#/components/schemas/EnergyPlanContractV3'
+      - $ref: '#/components/schemas/EnergyPlanContractFullV3_allOf'
+    EnergyPlanDetailV3_allOf:
+      properties:
+        electricityContract:
+          allOf:
+          - $ref: '#/components/schemas/EnergyPlanContractFullV3'
+          description: The details of the terms for the supply of electricity under this plan. Is mandatory if _fuelType_ is set to `ELECTRICITY` or `DUAL`.
+        gasContract:
+          allOf:
+          - $ref: '#/components/schemas/EnergyPlanContractFullV3'
+          description: The details of the terms for the supply of electricity under this plan. Is mandatory if _fuelType_ is set to `GAS` or `DUAL`.
+        meteringCharges:
+          description: Charges for metering included in the plan.
+          items:
+            $ref: '#/components/schemas/EnergyPlanDetailV3_allOf_meteringCharges'
+          type: array
+      type: object
+      x-conditional:
+      - gasContract
+      - electricityContract
+    EnergyPlanTariffPeriodV2_timeOfUseRates:
+      properties:
+        description:
+          description: Description of the rate.
+          type: string
+        displayName:
+          description: Display name of the rate.
+          type: string
+        period:
+          default: P1Y
+          description: Usage period for which the block rate applies. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax). Defaults to `P1Y` if absent.
+          type: string
+          x-cds-type: ExternalRef
+        rates:
+          description: Array of rates in order of usage volume.
+          items:
+            $ref: '#/components/schemas/EnergyPlanControlledLoadV2_singleRate_rates'
+          type: array
+        timeOfUse:
+          description: Array of time windows for which this time of use rate applies.
+          items:
+            $ref: '#/components/schemas/EnergyPlanTariffPeriodV2_timeOfUse'
+          type: array
+        type:
+          description: The type of usage that the rate applies to.
+          enum:
+          - PEAK
+          - OFF_PEAK
+          - SHOULDER
+          - SHOULDER1
+          - SHOULDER2
+          type: string
+      required:
+      - displayName
+      - rates
+      - timeOfUse
+      - type
+      type: object
+    Links:
+      properties:
+        self:
+          description: Fully qualified link that generated the current response document.
+          type: string
+          x-cds-type: URIString
+      required:
+      - self
       type: object
     EnergyPlanTariffPeriodV2:
       properties:
@@ -1347,132 +1445,34 @@ components:
       - demandCharges
       - dailySupplyCharge
       - bandedDailySupplyCharges
-    EnergyPlan:
+    EnergyPlanTariffPeriodV2_singleRate:
+      description: Object representing a single rate. Required if _rateBlockUType_ is `singleRate`.
       properties:
-        additionalInformation:
-          $ref: '#/components/schemas/EnergyPlan_additionalInformation'
-        applicationUri:
-          description: A link to an application web page where this plan can be applied for.
-          type: string
-          x-cds-type: URIString
-        brand:
-          description: The ID of the brand under which this plan is offered.
-          type: string
-          x-cds-type: ASCIIString
-        brandName:
-          description: The display name of the brand under which this plan is offered.
-          type: string
-        customerType:
-          description: The type of customer that the plan is offered to. If absent then the plan is available to all customers.
-          enum:
-          - RESIDENTIAL
-          - BUSINESS
-          type: string
         description:
-          description: A description of the plan.
+          description: Description of the rate.
           type: string
         displayName:
-          description: The display name of the plan.
+          description: Display name of the rate.
           type: string
-        effectiveFrom:
-          description: The date and time from which this plan is effective (i.e. is available for origination). Used to enable the articulation of products to the regime before they are available for customers to originate.
+        generalUnitPrice:
+          description: The block rate (unit price) for any usage above the included fixed usage, in dollars per kWh inclusive of GST. Only required if _pricingModel_ field is `QUOTA`.
           type: string
-          x-cds-type: DateTimeString
-        effectiveTo:
-          description: The date and time at which this plan will be retired and will no longer be offered. Used to enable the managed deprecation of plans.
-          type: string
-          x-cds-type: DateTimeString
-        fuelType:
-          description: The fuel types covered by the plan.
-          enum:
-          - ELECTRICITY
-          - GAS
-          - DUAL
-          type: string
-        geography:
-          $ref: '#/components/schemas/EnergyPlan_geography'
-        lastUpdated:
-          description: The last date and time that the information for this plan was changed (or the creation date for the plan if it has never been altered).
-          type: string
-          x-cds-type: DateTimeString
-        planId:
-          $ref: '#/components/schemas/EnergyPlanId'
-        type:
-          description: The type of the plan.
-          enum:
-          - STANDING
-          - MARKET
-          - REGULATED
-          type: string
-      required:
-      - brand
-      - brandName
-      - fuelType
-      - lastUpdated
-      - planId
-      - type
-      type: object
-    ResponseErrorListV2:
-      properties:
-        errors:
-          description: List of errors.
-          items:
-            $ref: '#/components/schemas/ErrorV2'
-          type: array
-      required:
-      - errors
-      type: object
-    EnergyPlanSolarFeedInTariffV3_singleTariff:
-      description: Represents a constant tariff. Mandatory if _tariffUType_ is set to `singleTariff`.
-      properties:
+          x-cds-type: AmountString
         period:
-          default: P1Y
-          description: Usage period for which the block rate applies. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax). Defaults to `P1Y` if absent.
+          description: Usage period for which the block rate applies. Formatted according to [ISO 8601 Durations](https://en.wikipedia.org/wiki/ISO_8601#Durations) (excludes recurrence syntax).
           type: string
           x-cds-type: ExternalRef
         rates:
-          description: Array of feed in rates.
+          description: Array of rates in order of usage volume.
           items:
-            $ref: '#/components/schemas/EnergyPlanSolarFeedInTariffV3_singleTariff_rates'
+            $ref: '#/components/schemas/EnergyPlanControlledLoadV2_singleRate_rates'
           type: array
-      required:
-      - rates
-      type: object
-    EnergyPlanGreenPowerCharges:
-      properties:
-        description:
-          description: The description of the charge.
-          type: string
-        displayName:
-          description: The display name of the charge.
-          type: string
-        scheme:
-          description: The applicable green power scheme.
-          enum:
-          - GREENPOWER
-          - OTHER
-          type: string
-        tiers:
-          description: Array of charge tiers based on the percentage of green power used for the period implied by the type. Array is in order of increasing percentage of green power.
-          items:
-            $ref: '#/components/schemas/EnergyPlanGreenPowerCharges_tiers'
-          type: array
-        type:
-          description: The type of charge.
-          enum:
-          - FIXED_PER_DAY
-          - FIXED_PER_WEEK
-          - FIXED_PER_MONTH
-          - FIXED_PER_UNIT
-          - PERCENT_OF_USE
-          - PERCENT_OF_BILL
-          type: string
       required:
       - displayName
-      - scheme
-      - tiers
-      - type
+      - rates
       type: object
+      x-conditional:
+      - generalUnitPrice
   headers:
     XV:
       description: The [payload version](#response-headers) that the endpoint has responded with.

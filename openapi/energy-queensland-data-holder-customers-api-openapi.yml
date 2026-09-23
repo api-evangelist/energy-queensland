@@ -23,7 +23,8 @@ paths:
       description: 'Obtain basic information on the customer that has authorised the current session.
 
 
-        <h3 id=''cdr-common-api_get-customer_conventions''>Conventions</h3>
+        Conventions
+
 
         In the customer payloads there are conventions that are explained below.
 
@@ -135,7 +136,7 @@ paths:
       description: 'Obtain detailed information on the authorised customer within the current session.
 
 
-        Obsolete versions: [v1](includes/obsolete/get-customer-detail-v1.html).'
+        Obsolete versions: v1.'
       operationId: getCustomerDetail
       parameters:
       - description: Version of the API endpoint requested by the client. Must be set to a positive integer. The endpoint should respond with the highest supported version between [_x-min-v_](#request-headers) and [_x-v_](#request-headers). If the value of [_x-min-v_](#request-headers) is equal to or higher than the value of [_x-v_](#request-headers) then the [_x-min-v_](#request-headers) header should be treated as absent. If all versions requested are not supported then the endpoint **MUST** respond with a `406 Not Acceptable`. See [HTTP Headers](#request-headers).
@@ -227,35 +228,60 @@ paths:
       x-version: '2'
 components:
   schemas:
-    ResponseCommonCustomerDetailV2_data:
+    ErrorV2_meta:
+      description: Additional data for customised error codes.
       properties:
-        customerUType:
-          description: The type of customer object that is present.
-          enum:
-          - organisation
-          - person
+        urn:
+          description: The CDR error code URN which the application-specific error code extends. Mandatory if the error _code_ is an application-specific error rather than a standardised error code.
           type: string
-        organisation:
-          $ref: '#/components/schemas/CommonOrganisationDetailV2'
-        person:
-          $ref: '#/components/schemas/CommonPersonDetailV2'
-      required:
-      - customerUType
       type: object
       x-conditional:
-      - person
-      - organisation
-    ResponseCommonCustomerDetailV2:
+      - urn
+    CommonOrganisationDetailV2:
+      allOf:
+      - $ref: '#/components/schemas/CommonOrganisation'
+      - $ref: '#/components/schemas/CommonOrganisationDetailV2_allOf'
+    CommonOrganisationDetailV2_allOf:
       properties:
-        data:
-          $ref: '#/components/schemas/ResponseCommonCustomerDetailV2_data'
-        links:
-          $ref: '#/components/schemas/Links'
-        meta:
-          $ref: '#/components/schemas/Meta'
+        physicalAddresses:
+          description: Array is mandatory but may be empty if no valid addresses are held. One and only one address may have the purpose of `REGISTERED`. Zero or one, and no more than one, record may have the purpose of `MAIL`. If zero then the `REGISTERED` address is to be used for mail.
+          items:
+            $ref: '#/components/schemas/CommonPhysicalAddressWithPurpose'
+          type: array
       required:
-      - data
-      - links
+      - physicalAddresses
+      type: object
+    ResponseErrorListV2:
+      properties:
+        errors:
+          description: List of errors.
+          items:
+            $ref: '#/components/schemas/ErrorV2'
+          type: array
+      required:
+      - errors
+      type: object
+    CommonPersonDetailV2_allOf:
+      properties:
+        emailAddresses:
+          description: May be empty.
+          items:
+            $ref: '#/components/schemas/CommonEmailAddress'
+          type: array
+        phoneNumbers:
+          description: Array is mandatory but may be empty if no phone numbers are held.
+          items:
+            $ref: '#/components/schemas/CommonPhoneNumber'
+          type: array
+        physicalAddresses:
+          description: Array is mandatory but may be empty if no valid addresses are held. One and only one address may have the purpose of `REGISTERED`. Zero or one, and no more than one, record may have the purpose of `MAIL`. If zero then the `REGISTERED` address is to be used for mail.
+          items:
+            $ref: '#/components/schemas/CommonPhysicalAddressWithPurpose'
+          type: array
+      required:
+      - emailAddresses
+      - phoneNumbers
+      - physicalAddresses
       type: object
     CommonOrganisation:
       properties:
@@ -328,115 +354,56 @@ components:
       type: object
       x-conditional:
       - industryCodeVersion
-    CommonPhysicalAddress:
+    CommonPhysicalAddressWithPurpose:
+      allOf:
+      - $ref: '#/components/schemas/CommonPhysicalAddress'
+      - $ref: '#/components/schemas/CommonPhysicalAddressWithPurpose_allOf'
+    CommonPerson:
       properties:
-        addressUType:
-          description: The type of address object present.
-          enum:
-          - paf
-          - simple
+        firstName:
+          description: For people with single names this field need not be present. The single name should be in the _lastName_ field. Where a data holder cannot determine first and middle names from a collection of given names, a single string representing all given names **MAY** be provided.
           type: string
-        paf:
-          $ref: '#/components/schemas/CommonPAFAddress'
-        simple:
-          $ref: '#/components/schemas/CommonSimpleAddress'
-      required:
-      - addressUType
-      type: object
-      x-conditional:
-      - simple
-      - paf
-    CommonPhoneNumber:
-      properties:
-        areaCode:
-          description: Required for non Mobile Phones, if field is present and refers to Australian code - the leading `0` should be omitted.
+        lastName:
+          description: For people with single names, the single name should be in this field.
           type: string
-        countryCode:
-          default: '+61'
-          description: If absent, assumed to be Australia (`+61`). The `+` should be included.
+        lastUpdateTime:
+          description: The date and time that this record was last updated by the customer. If no update has occurred then this date should reflect the initial creation date for the data.
           type: string
-        extension:
-          description: An extension number (if applicable).
-          type: string
-        fullNumber:
-          description: Fully formatted phone number with country code, area code, number and extension incorporated. Formatted according to section 5.1.4. of **[[RFC3966]](#iref-RFC3966)**.
+          x-cds-type: DateTimeString
+        middleNames:
+          description: Field is mandatory but array may be empty.
+          items:
+            type: string
+          type: array
+        occupationCode:
+          description: Value is a valid **[[ANZSCO]](#iref-ANZSCO)** Standard Occupation classification code. If the occupation code held by the data holder is not one of the supported **[[ANZSCO]](#iref-ANZSCO)** versions, then it must not be supplied.
           type: string
           x-cds-type: ExternalRef
-        isPreferred:
-          default: false
-          description: May be `true` for one and only one entry to indicate the preferred phone number. Assumed to be `false` if not present.
-          type: boolean
-        number:
-          description: The actual phone number, with leading zeros as appropriate.
-          type: string
-        purpose:
-          description: The purpose of the number as specified by the customer.
+        occupationCodeVersion:
+          default: ANZSCO_1220.0_2013_V1.2
+          description: The applicable **[[ANZSCO]](#iref-ANZSCO)** release version of the occupation code provided. Mandatory if an _occupationCode_ is supplied. If _occupationCode_ is supplied but _occupationCodeVersion_ is absent, default is `ANZSCO_1220.0_2013_V1.2`.
           enum:
-          - HOME
-          - INTERNATIONAL
-          - MOBILE
-          - OTHER
-          - UNSPECIFIED
-          - WORK
+          - ANZSCO_1220.0_2006_V1.0
+          - ANZSCO_1220.0_2006_V1.1
+          - ANZSCO_1220.0_2013_V1.2
+          - ANZSCO_1220.0_2013_V1.3
+          type: string
+        prefix:
+          description: Also known as title or salutation. The prefix to the name (e.g., Mr, Mrs, Ms, Miss, Sir, etc.)
+          type: string
+        suffix:
+          description: Used for a trailing suffix to the name (e.g., Jr.)
           type: string
       required:
-      - fullNumber
-      - number
-      - purpose
+      - lastName
+      - middleNames
       type: object
       x-conditional:
-      - areaCode
-    Meta:
-      type: object
-    CommonPersonDetailV2_allOf:
-      properties:
-        emailAddresses:
-          description: May be empty.
-          items:
-            $ref: '#/components/schemas/CommonEmailAddress'
-          type: array
-        phoneNumbers:
-          description: Array is mandatory but may be empty if no phone numbers are held.
-          items:
-            $ref: '#/components/schemas/CommonPhoneNumber'
-          type: array
-        physicalAddresses:
-          description: Array is mandatory but may be empty if no valid addresses are held. One and only one address may have the purpose of `REGISTERED`. Zero or one, and no more than one, record may have the purpose of `MAIL`. If zero then the `REGISTERED` address is to be used for mail.
-          items:
-            $ref: '#/components/schemas/CommonPhysicalAddressWithPurpose'
-          type: array
-      required:
-      - emailAddresses
-      - phoneNumbers
-      - physicalAddresses
-      type: object
+      - occupationCodeVersion
     CommonPersonDetailV2:
       allOf:
       - $ref: '#/components/schemas/CommonPerson'
       - $ref: '#/components/schemas/CommonPersonDetailV2_allOf'
-    Links:
-      properties:
-        self:
-          description: Fully qualified link that generated the current response document.
-          type: string
-          x-cds-type: URIString
-      required:
-      - self
-      type: object
-    CommonPhysicalAddressWithPurpose_allOf:
-      properties:
-        purpose:
-          description: Enumeration of values indicating the purpose of the physical address.
-          enum:
-          - MAIL
-          - OTHER
-          - PHYSICAL
-          - REGISTERED
-          - WORK
-          type: string
-      required:
-      - purpose
-      type: object
     CommonEmailAddress:
       properties:
         address:
@@ -458,10 +425,18 @@ components:
       - address
       - purpose
       type: object
-    CommonOrganisationDetailV2:
-      allOf:
-      - $ref: '#/components/schemas/CommonOrganisation'
-      - $ref: '#/components/schemas/CommonOrganisationDetailV2_allOf'
+    ResponseCommonCustomer:
+      properties:
+        data:
+          $ref: '#/components/schemas/ResponseCommonCustomer_data'
+        links:
+          $ref: '#/components/schemas/Links'
+        meta:
+          $ref: '#/components/schemas/Meta'
+      required:
+      - data
+      - links
+      type: object
     ResponseCommonCustomer_data:
       properties:
         customerUType:
@@ -480,21 +455,37 @@ components:
       x-conditional:
       - person
       - organisation
-    CommonPhysicalAddressWithPurpose:
-      allOf:
-      - $ref: '#/components/schemas/CommonPhysicalAddress'
-      - $ref: '#/components/schemas/CommonPhysicalAddressWithPurpose_allOf'
-    ResponseCommonCustomer:
+    CommonPhysicalAddress:
       properties:
-        data:
-          $ref: '#/components/schemas/ResponseCommonCustomer_data'
-        links:
-          $ref: '#/components/schemas/Links'
-        meta:
-          $ref: '#/components/schemas/Meta'
+        addressUType:
+          description: The type of address object present.
+          enum:
+          - paf
+          - simple
+          type: string
+        paf:
+          $ref: '#/components/schemas/CommonPAFAddress'
+        simple:
+          $ref: '#/components/schemas/CommonSimpleAddress'
       required:
-      - data
-      - links
+      - addressUType
+      type: object
+      x-conditional:
+      - simple
+      - paf
+    CommonPhysicalAddressWithPurpose_allOf:
+      properties:
+        purpose:
+          description: Enumeration of values indicating the purpose of the physical address.
+          enum:
+          - MAIL
+          - OTHER
+          - PHYSICAL
+          - REGISTERED
+          - WORK
+          type: string
+      required:
+      - purpose
       type: object
     CommonPAFAddress:
       description: Australian address formatted according to the file format defined by the [PAF file format](https://auspost.com.au/content/dam/auspost_corp/media/documents/australia-post-data-guide.pdf). Required if _addressUType_ is set to `paf`.
@@ -573,35 +564,6 @@ components:
       - postcode
       - state
       type: object
-    ErrorV2_meta:
-      description: Additional data for customised error codes.
-      properties:
-        urn:
-          description: The CDR error code URN which the application-specific error code extends. Mandatory if the error _code_ is an application-specific error rather than a standardised error code.
-          type: string
-      type: object
-      x-conditional:
-      - urn
-    ErrorV2:
-      properties:
-        code:
-          description: The code of the error encountered. Where the error is specific to the respondent, an application-specific error code, expressed as a string value. If the error is application-specific, the URN code that the specific error extends must be provided in the _meta_ object. Otherwise, the value is the error code URN.
-          type: string
-        detail:
-          description: A human-readable explanation specific to this occurrence of the problem.
-          type: string
-        meta:
-          $ref: '#/components/schemas/ErrorV2_meta'
-        title:
-          description: A short, human-readable summary of the problem that **MUST NOT** change from occurrence to occurrence of the problem represented by the error code.
-          type: string
-      required:
-      - code
-      - detail
-      - title
-      type: object
-      x-conditional:
-      - meta
     CommonSimpleAddress:
       description: Required if _addressUType_ is set to `simple`.
       properties:
@@ -638,78 +600,117 @@ components:
       type: object
       x-conditional:
       - postcode
-    CommonPerson:
+    ErrorV2:
       properties:
-        firstName:
-          description: For people with single names this field need not be present. The single name should be in the _lastName_ field. Where a data holder cannot determine first and middle names from a collection of given names, a single string representing all given names **MAY** be provided.
+        code:
+          description: The code of the error encountered. Where the error is specific to the respondent, an application-specific error code, expressed as a string value. If the error is application-specific, the URN code that the specific error extends must be provided in the _meta_ object. Otherwise, the value is the error code URN.
           type: string
-        lastName:
-          description: For people with single names, the single name should be in this field.
+        detail:
+          description: A human-readable explanation specific to this occurrence of the problem.
           type: string
-        lastUpdateTime:
-          description: The date and time that this record was last updated by the customer. If no update has occurred then this date should reflect the initial creation date for the data.
-          type: string
-          x-cds-type: DateTimeString
-        middleNames:
-          description: Field is mandatory but array may be empty.
-          items:
-            type: string
-          type: array
-        occupationCode:
-          description: Value is a valid **[[ANZSCO]](#iref-ANZSCO)** Standard Occupation classification code. If the occupation code held by the data holder is not one of the supported **[[ANZSCO]](#iref-ANZSCO)** versions, then it must not be supplied.
-          type: string
-          x-cds-type: ExternalRef
-        occupationCodeVersion:
-          default: ANZSCO_1220.0_2013_V1.2
-          description: The applicable **[[ANZSCO]](#iref-ANZSCO)** release version of the occupation code provided. Mandatory if an _occupationCode_ is supplied. If _occupationCode_ is supplied but _occupationCodeVersion_ is absent, default is `ANZSCO_1220.0_2013_V1.2`.
-          enum:
-          - ANZSCO_1220.0_2006_V1.0
-          - ANZSCO_1220.0_2006_V1.1
-          - ANZSCO_1220.0_2013_V1.2
-          - ANZSCO_1220.0_2013_V1.3
-          type: string
-        prefix:
-          description: Also known as title or salutation. The prefix to the name (e.g., Mr, Mrs, Ms, Miss, Sir, etc.)
-          type: string
-        suffix:
-          description: Used for a trailing suffix to the name (e.g., Jr.)
+        meta:
+          $ref: '#/components/schemas/ErrorV2_meta'
+        title:
+          description: A short, human-readable summary of the problem that **MUST NOT** change from occurrence to occurrence of the problem represented by the error code.
           type: string
       required:
-      - lastName
-      - middleNames
+      - code
+      - detail
+      - title
       type: object
       x-conditional:
-      - occupationCodeVersion
-    CommonOrganisationDetailV2_allOf:
+      - meta
+    CommonPhoneNumber:
       properties:
-        physicalAddresses:
-          description: Array is mandatory but may be empty if no valid addresses are held. One and only one address may have the purpose of `REGISTERED`. Zero or one, and no more than one, record may have the purpose of `MAIL`. If zero then the `REGISTERED` address is to be used for mail.
-          items:
-            $ref: '#/components/schemas/CommonPhysicalAddressWithPurpose'
-          type: array
+        areaCode:
+          description: Required for non Mobile Phones, if field is present and refers to Australian code - the leading `0` should be omitted.
+          type: string
+        countryCode:
+          default: '+61'
+          description: If absent, assumed to be Australia (`+61`). The `+` should be included.
+          type: string
+        extension:
+          description: An extension number (if applicable).
+          type: string
+        fullNumber:
+          description: Fully formatted phone number with country code, area code, number and extension incorporated. Formatted according to section 5.1.4. of **[[RFC3966]](#iref-RFC3966)**.
+          type: string
+          x-cds-type: ExternalRef
+        isPreferred:
+          default: false
+          description: May be `true` for one and only one entry to indicate the preferred phone number. Assumed to be `false` if not present.
+          type: boolean
+        number:
+          description: The actual phone number, with leading zeros as appropriate.
+          type: string
+        purpose:
+          description: The purpose of the number as specified by the customer.
+          enum:
+          - HOME
+          - INTERNATIONAL
+          - MOBILE
+          - OTHER
+          - UNSPECIFIED
+          - WORK
+          type: string
       required:
-      - physicalAddresses
+      - fullNumber
+      - number
+      - purpose
       type: object
-    ResponseErrorListV2:
+      x-conditional:
+      - areaCode
+    ResponseCommonCustomerDetailV2:
       properties:
-        errors:
-          description: List of errors.
-          items:
-            $ref: '#/components/schemas/ErrorV2'
-          type: array
+        data:
+          $ref: '#/components/schemas/ResponseCommonCustomerDetailV2_data'
+        links:
+          $ref: '#/components/schemas/Links'
+        meta:
+          $ref: '#/components/schemas/Meta'
       required:
-      - errors
+      - data
+      - links
       type: object
+    Meta:
+      type: object
+    Links:
+      properties:
+        self:
+          description: Fully qualified link that generated the current response document.
+          type: string
+          x-cds-type: URIString
+      required:
+      - self
+      type: object
+    ResponseCommonCustomerDetailV2_data:
+      properties:
+        customerUType:
+          description: The type of customer object that is present.
+          enum:
+          - organisation
+          - person
+          type: string
+        organisation:
+          $ref: '#/components/schemas/CommonOrganisationDetailV2'
+        person:
+          $ref: '#/components/schemas/CommonPersonDetailV2'
+      required:
+      - customerUType
+      type: object
+      x-conditional:
+      - person
+      - organisation
   headers:
-    XFAPIInteractionId:
-      description: An **[[RFC4122]](#nref-RFC4122)** UUID used as a correlation id. If provided, the data holder **MUST** play back this value in the _x-fapi-interaction-id_ response header. If not provided a **[[RFC4122]](#nref-RFC4122)** UUID value is required to be provided in the response header to track the interaction.
+    XV:
+      description: The [payload version](#response-headers) that the endpoint has responded with.
       explode: false
       required: true
       schema:
         type: string
       style: simple
-    XV:
-      description: The [payload version](#response-headers) that the endpoint has responded with.
+    XFAPIInteractionId:
+      description: An **[[RFC4122]](#nref-RFC4122)** UUID used as a correlation id. If provided, the data holder **MUST** play back this value in the _x-fapi-interaction-id_ response header. If not provided a **[[RFC4122]](#nref-RFC4122)** UUID value is required to be provided in the response header to track the interaction.
       explode: false
       required: true
       schema:

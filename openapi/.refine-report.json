@@ -1,0 +1,38 @@
+{
+  "provider": "energy-queensland",
+  "sources": [
+    "_original/energy-queensland-cds-common-openapi.yml",
+    "_original/energy-queensland-cds-energy-openapi.yml"
+  ],
+  "outputs": [
+    "energy-queensland-data-holder-customers-api-openapi.yml",
+    "energy-queensland-data-holder-operations-api-openapi.yml",
+    "energy-queensland-distributed-energy-resources-api-openapi.yml",
+    "energy-queensland-electricity-service-points-api-openapi.yml",
+    "energy-queensland-electricity-usage-api-openapi.yml",
+    "energy-queensland-energy-account-balances-api-openapi.yml",
+    "energy-queensland-energy-account-billing-api-openapi.yml",
+    "energy-queensland-energy-accounts-api-openapi.yml",
+    "energy-queensland-energy-plans-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "sourced from openapi/_original/ (2 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "energy-queensland-cds-common-openapi.yml: upgraded openapi 3.0.3 -> OpenAPI 3.2.0",
+    "energy-queensland-cds-energy-openapi.yml: upgraded openapi 3.0.3 -> OpenAPI 3.2.0",
+    "apis.yml register: already-registered"
+  ],
+  "skipped": [
+    "energy-queensland-data-holder-customers-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "energy-queensland-data-holder-operations-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "energy-queensland-distributed-energy-resources-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "energy-queensland-electricity-service-points-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "energy-queensland-electricity-usage-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "energy-queensland-energy-account-balances-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "energy-queensland-energy-account-billing-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "energy-queensland-energy-accounts-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "energy-queensland-energy-plans-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
+}
