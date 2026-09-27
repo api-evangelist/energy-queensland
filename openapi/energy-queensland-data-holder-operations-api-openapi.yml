@@ -119,7 +119,17 @@ paths:
       - Data Holder Operations
       x-version: '1'
 components:
+  headers:
+    XV:
+      description: The [payload version](#response-headers) that the endpoint has responded with.
+      explode: false
+      required: true
+      schema:
+        type: string
+      style: simple
   schemas:
+    Meta:
+      type: object
     ResponseDiscoveryOutagesList_data:
       properties:
         outages:
@@ -139,6 +149,15 @@ components:
       type: object
       x-conditional:
       - urn
+    Links:
+      properties:
+        self:
+          description: Fully qualified link that generated the current response document.
+          type: string
+          x-cds-type: URIString
+      required:
+      - self
+      type: object
     ResponseCommonDiscoveryStatus_data:
       properties:
         detectionTime:
@@ -170,29 +189,6 @@ components:
       type: object
       x-conditional:
       - explanation
-    Meta:
-      type: object
-    Links:
-      properties:
-        self:
-          description: Fully qualified link that generated the current response document.
-          type: string
-          x-cds-type: URIString
-      required:
-      - self
-      type: object
-    ResponseCommonDiscoveryStatus:
-      properties:
-        data:
-          $ref: '#/components/schemas/ResponseCommonDiscoveryStatus_data'
-        links:
-          $ref: '#/components/schemas/Links'
-        meta:
-          $ref: '#/components/schemas/Meta'
-      required:
-      - data
-      - links
-      type: object
     ResponseErrorListV2:
       properties:
         errors:
@@ -202,18 +198,6 @@ components:
           type: array
       required:
       - errors
-      type: object
-    ResponseDiscoveryOutagesList:
-      properties:
-        data:
-          $ref: '#/components/schemas/ResponseDiscoveryOutagesList_data'
-        links:
-          $ref: '#/components/schemas/Links'
-        meta:
-          $ref: '#/components/schemas/Meta'
-      required:
-      - data
-      - links
       type: object
     ErrorV2:
       properties:
@@ -235,6 +219,18 @@ components:
       type: object
       x-conditional:
       - meta
+    ResponseCommonDiscoveryStatus:
+      properties:
+        data:
+          $ref: '#/components/schemas/ResponseCommonDiscoveryStatus_data'
+        links:
+          $ref: '#/components/schemas/Links'
+        meta:
+          $ref: '#/components/schemas/Meta'
+      required:
+      - data
+      - links
+      type: object
     DiscoveryOutage:
       properties:
         duration:
@@ -256,11 +252,15 @@ components:
       - explanation
       - outageTime
       type: object
-  headers:
-    XV:
-      description: The [payload version](#response-headers) that the endpoint has responded with.
-      explode: false
-      required: true
-      schema:
-        type: string
-      style: simple
+    ResponseDiscoveryOutagesList:
+      properties:
+        data:
+          $ref: '#/components/schemas/ResponseDiscoveryOutagesList_data'
+        links:
+          $ref: '#/components/schemas/Links'
+        meta:
+          $ref: '#/components/schemas/Meta'
+      required:
+      - data
+      - links
+      type: object
