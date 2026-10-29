@@ -1,4 +1,4 @@
-# Energy Queensland (energy-queensland)
+# Energy Queensland
 
 <!-- API-EVANGELIST-PROVENANCE:BEGIN -->
 > ### About this repository
@@ -64,134 +64,134 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Energy Queensland Limited is the Queensland Government-owned corporation formed on 30 June 2016 by merging Ergon Energy and Energex. It is the whole Queensland electricity value chain below transmission in a single holding company: Energex distributes to roughly 1.5 million connections across South East Queensland, Ergon Energy Network distributes across regional Queensland, Ergon Energy Retail is the notified-price retailer for about 760,000 regional customers, Yurika sells energy services and telecommunications, and SPARQ Solutions provides group ICT. That dual role is what makes its API posture worth recording precisely, because the two halves of the business sit on opposite sides of a statutory line. The **retail** half is a designated Consumer Data Right energy data holder and its implementation is verified live, not claimed: "Ergon Energy Retail" (ABN 11121177802) is listed on the ACCC CDR Register with `publicBaseUri https://public.cdr.ergonretail.com.au` and `productBaseUri https://cdr.energymadeeasy.gov.au/ergon`, both of which answered HTTP 200 to anonymous, standards-conformant calls on 2026-07-27, returning 36 REGULATED electricity plans and a CDS discovery status of OK. The **distribution** half — the poles and wires — is not a CDR data holder at all, publishes no developer portal, no open-data API and no machine-readable contract, and has no `developer.`, `developers.`, `api.`, `docs.` or `data.` subdomain in DNS on energyq.com.au, ergon.com.au or energex.com.au. Its network data reaches the public as PDF and XLSX planning reports, registration-free but non-programmatic map viewers, and exactly one open-licensed spatial dataset deposited on the Queensland Government's CKAN portal.
+Energy Queensland Limited is the Queensland Government-owned corporation formed on 30 June 2016 by merging Ergon Energy and Energex. It is the whole Queensland electricity value chain below transmission in a single holding company: Energex distributes to roughly 1.5 million connections across South East Queensland, Ergon Energy Network distributes across regional Queensland, Ergon Energy Retail is the notified-price retailer for about 760,000 regional customers, Yurika sells energy services and telecommunications, and SPARQ Solutions provides group ICT. That dual role is what makes its API posture worth recording precisely, because the two halves of the business sit on opposite sides of a statutory line. The RETAIL half is a designated Consumer Data Right energy data holder and its implementation is verified live, not claimed: "Ergon Energy Retail" (ABN 11121177802) is listed on the ACCC CDR Register with publicBaseUri https://public.cdr.ergonretail.com.au and productBaseUri https://cdr.energymadeeasy.gov.au/ergon, both of which answered HTTP 200 to anonymous, standards-conformant calls on 2026-07-27, returning 36 REGULATED electricity plans and a CDS discovery status of OK. The DISTRIBUTION half - the poles and wires - is not a CDR data holder at all, publishes no developer portal, no open-data API and no machine-readable contract, and has no developer., developers., api., docs. or data. subdomain in DNS on energyq.com.au, ergon.com.au or energex.com.au. Its network data reaches the public as PDF and XLSX planning reports, registration-free but non-programmatic map viewers, and exactly one open-licensed spatial dataset deposited on the Queensland Government's CKAN portal. The split is the finding: a mandate transplanted from banking produced a real, anonymous, standardised API on the regulated retail side and changed nothing whatsoever on the network side it never touched.
 
-**APIs.json:** [https://raw.githubusercontent.com/api-evangelist/energy-queensland/refs/heads/main/apis.yml](https://raw.githubusercontent.com/api-evangelist/energy-queensland/refs/heads/main/apis.yml)
+**Areas:** Energy · Australia · Utilities · Electricity · Grid · Distribution Network · Energy Retail · Consumer Data Right · CDR · Product Reference Data · Queensland · Smart Metering
 
-## Tags
+## Energy Queensland on APIs.io
 
-- Energy
-- Australia
-- Utilities
-- Electricity
-- Grid
-- Distribution Network
-- Energy Retail
-- Consumer Data Right
-- CDR
-- Product Reference Data
-- Queensland
-- Smart Metering
-- Solar
-- DER
-- Open Data
+Everything profiled for Energy Queensland is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/energy-queensland/](https://apis.io/providers/energy-queensland/)** — or go straight to one of the APIs or properties below.
 
-## Timestamps
+### APIs (9)
 
-- **Created:** 2026-07-27
-- **Modified:** 2026-07-27
+- [Energy Queensland Data Holder Customers API](https://apis.io/apis/energy-queensland/energy-queensland-data-holder-customers-api/) — Data Holder Customer endpoints
+- [Energy Queensland Data Holder Operations API](https://apis.io/apis/energy-queensland/energy-queensland-data-holder-operations-api/) — Data Holder Operations endpoints
+- [Energy Queensland Distributed Energy Resources API](https://apis.io/apis/energy-queensland/energy-queensland-distributed-energy-resources-api/) — Distributed Energy Resource endpoints
+- [Energy Queensland Electricity Service Points API](https://apis.io/apis/energy-queensland/energy-queensland-electricity-service-points-api/) — Electricity Service Point endpoints
+- [Energy Queensland Electricity Usage API](https://apis.io/apis/energy-queensland/energy-queensland-electricity-usage-api/) — Electricity Usage endpoints
+- [Energy Queensland Energy Account Balances API](https://apis.io/apis/energy-queensland/energy-queensland-energy-account-balances-api/) — Energy Account Balance endpoints
+- [Energy Queensland Energy Account Billing API](https://apis.io/apis/energy-queensland/energy-queensland-energy-account-billing-api/) — Energy Account Billing endpoints
+- [Energy Queensland Energy Accounts API](https://apis.io/apis/energy-queensland/energy-queensland-energy-accounts-api/) — Energy Account endpoints
+- [Energy Queensland Energy Plans API](https://apis.io/apis/energy-queensland/energy-queensland-energy-plans-api/) — Energy Plan endpoints
 
-## Mandate
+### Published properties
 
-| | |
-|---|---|
-| **Home market** | Australia |
-| **Tier** | Network distributor (Energex + Ergon Energy Network) that also owns a mandated retailer (Ergon Energy Retail) |
-| **Mandate regime** | Consumer Data Right (energy) — Part IVD, Competition and Consumer Act 2010; ACCC as regulator, Treasury Data Standards Body as spec author. Binds the **retailer**; distributors are not designated. |
-| **Mandate status** | **Live and implemented** — verified via CDR Register entry, a live standards-conformant host on an Energy Queensland domain, and 36 live branded plans on the AER's host |
-| **Data standard** | CDR Consumer Data Standards (energy) — CDR Energy API v1.36.0 + CDR Common API v1.36.0, OpenAPI 3.0.3, `x-v` header versioning. No Green Button / ESPI, OCPP/OCPI, OpenADR, IEEE 2030.5 or IEC CIM reference found. |
-| **Consumer data API** | Yes — accredited CDR data recipients only, with consumer consent, over mTLS |
-| **Open market data** | No — no open-data portal, no grid/network API; one open-licensed GIS dataset sits on the state's CKAN portal |
-| **Access gate** | Accredited-only for consumer data; no gate at all on product reference data; no API of any kind on the network side |
-| **Developer portal** | None — no developer/api/docs/data subdomain resolves on any group domain |
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
 
-Energy Queensland is the sharpest single-company test of whether a statutory data mandate is what produces an API, because it contains the mandated case and the control case inside one balance sheet. The regulated retail subsidiary is a live, register-listed, standards-conformant API publisher. The 2.3-million-connection distribution business the mandate never touched publishes nothing programmable. Nothing about engineering capability, data volume, customer count or ownership differs between the two halves — the only variable is whether Part IVD applied.
+#### MCP servers (1)
 
-Designation did not equal implementation even here: the ACCC granted Ergon Energy Queensland a section 56GD exemption on 25 August 2023 deferring certain CDR obligations for non-complex and complex requests until 1 July 2024.
+Model Context Protocol servers that expose the API to agents.
 
-## APIs
+- [energy-queensland](https://apis.io/servers/energy-queensland/energy-queensland/)
 
-### Ergon Energy Retail CDR Energy Product Reference Data API
+#### Agentic access (1)
 
-The unauthenticated Consumer Data Right Product Reference Data surface for Energy Queensland's retail brand — Get Generic Plans and Get Generic Plan Detail from the Consumer Data Standards CDR Energy API. In CDR energy, unlike CDR banking, generic plan data is not served by the data holder's own host: it is served centrally by the Australian Energy Regulator's Energy Made Easy CDR host under a per-brand path. Confirmed live 2026-07-27: `GET /cds-au/v1/energy/plans` with `x-v: 1` returned HTTP 200 and `meta.totalRecords 36`; the first record is `planId ERG1064038RRE1@EME`, brand `ergon`, `type REGULATED`. Plan detail requires `x-v: 3` (HTTP 406 at `x-v: 1`). No key, no signup, no accreditation.
+Which operations an agent can call, which act, and which need a human in the loop.
 
-- **Human URL:** [https://consumerdatastandardsaustralia.github.io/standards/#energy-apis](https://consumerdatastandardsaustralia.github.io/standards/#energy-apis)
-- **Base URL:** `https://cdr.energymadeeasy.gov.au/ergon/cds-au/v1`
+- [Energy Queensland Agentic Access](https://apis.io/agentic-access/energy-queensland/energy-queensland-agentic-access/)
 
-#### Tags
+#### Collections (2)
 
-- Energy Plans
-- Product Reference Data
-- Consumer Data Right
-- Tariffs
-- Regulated Prices
-- Australia
+Postman and Open Collection request collections.
 
-#### Properties
+- [CDR Common API](https://apis.io/collections/energy-queensland/open-energy-queensland-cds-common/)
+- [CDR Energy API](https://apis.io/collections/energy-queensland/open-energy-queensland-cds-energy/)
 
-- [OpenAPI](openapi/energy-queensland-cds-energy-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [API Reference](https://consumerdatastandardsaustralia.github.io/standards/#energy-apis)
-- [API Reference](https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plans)
-- [API Reference](https://consumerdatastandardsaustralia.github.io/standards/#get-generic-plan-detail)
-- [Documentation](https://consumerdatastandardsaustralia.github.io/standards/)
-- [Registry](https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary)
+#### Overlays (2)
 
-### Ergon Energy Retail CDR Discovery API
+OpenAPI overlays, including conversational phrasing for each operation.
 
-Ergon Energy Retail's own registered Consumer Data Right public base URI, serving the two unauthenticated Data Holder Operations endpoints of the Consumer Data Standards CDR Common API — Get Status and Get Outages. This is the only anonymously callable API surface hosted on an Energy Queensland controlled domain. Confirmed live 2026-07-27 (HTTP 200 with `x-v: 1`, status OK, empty outages array). The base URI serves nothing else anonymously — `/cds-au/v1/energy/plans`, the site root and `/.well-known/openid-configuration` all return an nginx HTTP 404.
+- [Energy Queensland Cds Common Overlay](https://apis.io/overlays/energy-queensland/energy-queensland-cds-common-overlay/)
+- [Energy Queensland Cds Energy Overlay](https://apis.io/overlays/energy-queensland/energy-queensland-cds-energy-overlay/)
 
-- **Human URL:** [https://consumerdatastandardsaustralia.github.io/standards/#common-apis](https://consumerdatastandardsaustralia.github.io/standards/#common-apis)
-- **Base URL:** `https://public.cdr.ergonretail.com.au/cds-au/v1`
+#### Security (2)
 
-#### Tags
+Authentication, trust centre, and vulnerability disclosure.
 
-- Discovery
-- Status
-- Outages
-- Consumer Data Right
-- Australia
+- [Energy Queensland Authentication](https://apis.io/security/energy-queensland/energy-queensland-authentication/)
+- [Energy Queensland Domain Security](https://apis.io/security/energy-queensland/energy-queensland-domain-security/)
 
-#### Properties
+#### OAuth scopes (1)
 
-- [OpenAPI](openapi/energy-queensland-cds-common-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [API Reference](https://consumerdatastandardsaustralia.github.io/standards/#get-status)
-- [API Reference](https://consumerdatastandardsaustralia.github.io/standards/#get-outages)
-- [Status](https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status)
-- [Documentation](https://consumerdatastandardsaustralia.github.io/standards/)
+The permissions the API asks for.
 
-### Ergon Energy Retail CDR Energy Consumer Data API
+- [Energy Queensland Scopes](https://apis.io/scopes/energy-queensland/energy-queensland-scopes/)
 
-The consumer-authorised half of the Consumer Data Right energy obligation — electricity service points, usage, distributed energy resources, energy accounts, balances, invoices, billing, concessions and payment schedules, sixteen paths in all. Real and mandated, but not open: reachable only by an ACCC-accredited CDR data recipient over mutual TLS with FAPI-profile OAuth2/OIDC after the individual customer consents. No base URL is recorded because none is publicly discoverable and no endpoint was called. The host `api.cdr.ergonretail.com.au` does resolve and its TLS handshake emits a Request CERT message backed by a private certificate chain — the mTLS gate, observed directly.
+#### Rate limits (1)
 
-- **Human URL:** [https://consumerdatastandardsaustralia.github.io/standards/#energy-apis](https://consumerdatastandardsaustralia.github.io/standards/#energy-apis)
+Published request limits.
 
-#### Tags
+- [Energy Queensland Rate Limits](https://apis.io/rate-limits/energy-queensland/energy-queensland-rate-limits/)
 
-- Energy Accounts
-- Electricity Usage
-- Billing
-- Distributed Energy Resources
-- Consumer Data Right
-- Australia
+## Where to find this API
 
-#### Properties
-
-- [OpenAPI](openapi/energy-queensland-cds-energy-openapi.yml) — [OpenAPI Specification](https://spec.openapis.org/oas/latest.html)
-- [API Reference](https://consumerdatastandardsaustralia.github.io/standards/#energy-apis)
-- [Authentication](https://consumerdatastandardsaustralia.github.io/standards/#security-profile)
-- [Documentation](https://consumerdatastandardsaustralia.github.io/standards/)
-
-## Common Properties
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
 
 - [Website](https://www.energyq.com.au/)
-- [GitHub Organization](https://github.com/Energy-Queensland)
-- [LinkedIn](https://au.linkedin.com/company/energyq)
-- [Status](https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status)
-- [Registry](https://api.cdr.gov.au/cdr-register/v1/energy/data-holders/brands/summary)
 - [Documentation](https://consumerdatastandardsaustralia.github.io/standards/)
-- [Data](https://www.data.qld.gov.au/dataset/ergon-energy-electrical-distribution-network-series)
-- [Regulatory](https://www.accc.gov.au/public-registers/exemption-for-ergon-energy-queensland-pty-ltd)
+- [API reference](https://consumerdatastandardsaustralia.github.io/standards/#energy-apis)
+- [GitHub](https://github.com/Energy-Queensland)
+- [Status](https://public.cdr.ergonretail.com.au/cds-au/v1/discovery/status)
 
-## Maintainers
+## API Evangelist rating
 
-- **Kin Lane** — kin@apievangelist.com
+**Kin Score 38.6** — thin · rubric 0.24.0 · scored 2026-10-17
+
+| Facet | Score |
+|---|---|
+| Discoverability | 66.1 |
+| Contract quality | 45.9 |
+| Contract governance | 18.2 |
+| Operational transparency | 65.8 |
+| Developer ergonomics | 30.4 |
+| Access clarity | 7.9 |
+
+**Agent readiness 26.4** — agent-aware
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | derived (partial credit) |
+| Reversibility Documented | — |
+| MCP Server | — |
+| Auth Clarity | bearer (partial credit) |
+| Idempotency | — |
+| Error Semantics | verified |
+| OpenAPI Examples | — |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | — |
+| Agent Skills | derived (partial credit) |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+
+**Regulatory alignment 32.0** — Energy & Utilities
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/energy-queensland/](https://apis.io/providers/energy-queensland/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Energy Queensland: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/energy-queensland/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
